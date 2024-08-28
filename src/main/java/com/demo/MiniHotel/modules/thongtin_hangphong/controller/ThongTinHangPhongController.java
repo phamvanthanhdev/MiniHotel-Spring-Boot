@@ -2,6 +2,7 @@ package com.demo.MiniHotel.modules.thongtin_hangphong.controller;
 
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
@@ -101,10 +102,26 @@ public class ThongTinHangPhongController {
         return new ResponseEntity<>(response2s, HttpStatus.OK);
     }
 
+    @GetMapping("/tim-kiem-theo-gia")
+    public ResponseEntity<List<ThongTinHangPhongUserResponse>> timKiemHangPhongTheoGia(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+                                                                                @RequestParam("ngayDiDat") LocalDate ngayDiDat,
+                                                                                @RequestParam("giaMin") Long giaMin,
+                                                                                @RequestParam("giaMax") Long giaMax) throws Exception {
+        List<ThongTinHangPhongUserResponse> responses = thongTinHangPhongService.timKiemThongTinHangPhongTheoGia(ngayDenDat, ngayDiDat, giaMin, giaMax);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
     @GetMapping("/sap-xep")
-    public ResponseEntity<List<ThongTinHangPhongUserResponse>> sapXepHangPhongTheoSoLuongDatThue(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+    public ResponseEntity<List<ThongTinHangPhongUserResponse>> layHangPhongTheoSoLuongDatThue(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
                                                                                              @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
         List<ThongTinHangPhongUserResponse> responses = thongTinHangPhongService.sapXepHangPhongTheoSoLuongDatThue(ngayDenDat, ngayDiDat);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @GetMapping("/thoi-gian-admin")
+    public ResponseEntity<List<ThongTinHangPhongAdminResponse>> getHangPhongAdminTheoThoiGian(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+                                                                                         @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
+        List<ThongTinHangPhongAdminResponse> responses = thongTinHangPhongService.layThongTinHangPhongAdminTheoThoiGian(ngayDenDat, ngayDiDat);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

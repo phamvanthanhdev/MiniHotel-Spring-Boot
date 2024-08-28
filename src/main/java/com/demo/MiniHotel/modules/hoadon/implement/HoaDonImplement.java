@@ -9,13 +9,20 @@ import com.demo.MiniHotel.modules.nhanvien.service.INhanVienService;
 import com.demo.MiniHotel.modules.nhomquyen.service.INhomQuyenService;
 import com.demo.MiniHotel.modules.phieuthuephong.service.IPhieuThueService;
 import com.demo.MiniHotel.modules.taikhoan.service.ITaiKhoanService;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
+import com.demo.MiniHotel.repository.HoaDonNgayRepository;
 import com.demo.MiniHotel.repository.HoaDonRepository;
 import com.demo.MiniHotel.repository.PhieuThuePhongRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +33,11 @@ public class HoaDonImplement implements IHoaDonService {
     private final HoaDonRepository repository;
     private final INhanVienService nhanVienService;
     private final PhieuThuePhongRepository phieuThuePhongRepository;
+    private final HoaDonNgayRepository hoaDonNgayRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
 
     @Override
     public HoaDon addNewHoaDon(HoaDonRequest request) throws Exception {
@@ -120,6 +132,31 @@ public class HoaDonImplement implements IHoaDonService {
         hoaDon.setNhanVien(nhanVien);
 
         return convertHoaDonResponse(repository.save(hoaDon));
+    }
+
+    @Override
+    public List<HoaDonNgay> getHoaDonNgaysHienTai() {
+        return hoaDonNgayRepository.findAll();
+    }
+
+    @Override
+    public List<HoaDonNgay> getHoaDonNgaysTheoNgay(LocalDate ngay) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("HoaDonTheoNgay", HoaDonNgay.class)
+                .registerStoredProcedureParameter("ngay", LocalDate.class, ParameterMode.IN)
+                .setParameter("ngay", ngay);
+        List<HoaDonNgay> hoaDonNgays = query.getResultList();
+        return hoaDonNgays;
+    }
+
+    @Override
+    public List<DoanhThuTheoNgay> getDoanhThuTheoNgay(LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("DoanhThuTheoThoiGian", DoanhThuTheoNgay.class)
+                .registerStoredProcedureParameter("ngay_bat_dau", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_ket_thuc", LocalDate.class, ParameterMode.IN)
+                .setParameter("ngay_bat_dau", ngayBatDau)
+                .setParameter("ngay_ket_thuc", ngayKetThuc);
+        List<DoanhThuTheoNgay> doanhThuTheoNgays = query.getResultList();
+        return doanhThuTheoNgays;
     }
 
     public HoaDonResponse convertHoaDonResponse(HoaDon hoaDon){

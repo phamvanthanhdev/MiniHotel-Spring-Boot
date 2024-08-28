@@ -1,16 +1,23 @@
 package com.demo.MiniHotel.modules.chitiet_phieuthue.implement;
 
 import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
+import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
 import com.demo.MiniHotel.modules.hangphong.service.IHangPhongService;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
 import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
+import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.DelChiTietKhachThueRequest;
 import com.demo.MiniHotel.modules.phong.service.IPhongService;
+import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
+import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongHienTaiResponse;
+import com.demo.MiniHotel.modules.thongtin_phong.service.IThongTinPhongService;
 import com.demo.MiniHotel.repository.ChiTietPhieuThueRepository;
 import com.demo.MiniHotel.repository.HoaDonRepository;
 import com.demo.MiniHotel.repository.PhieuThuePhongRepository;
@@ -31,6 +38,10 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     private final IKhachHangService khachHangService;
     private final HoaDonRepository hoaDonRepository;
     private final IHoaDonService hoaDonService;
+    private final IChiTietPhuThuService phuThuService;
+    private final IChiTietSuDungDichVuService chiTietSuDungDichVuService;
+    private final IThongTinHangPhongService thongTinHangPhongService;
+    private final IThongTinPhongService thongTinPhongService;
     @Override
     public ChiTietPhieuThue addNewChiTietPhieuThue(ChiTietPhieuThueRequest request) throws Exception {
         ChiTietPhieuThue chiTietPhieuThue = new ChiTietPhieuThue();
@@ -166,6 +177,26 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     }
 
     @Override
+    public List<ChiTietKhachThueResponse> getKhachThueHienTai() throws Exception {
+        List<ThongTinPhongHienTaiResponse> thongTinPhongHienTais = thongTinPhongService.getThongTinPhongHienTai();
+        List<ChiTietKhachThueResponse> chiTietKhachThueResponses = new ArrayList<>();
+        for (ThongTinPhongHienTaiResponse thongTinPhong:thongTinPhongHienTais) {
+            if(thongTinPhong.getIdChiTietPhieuThue() != null) {
+                ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(thongTinPhong.getIdChiTietPhieuThue());
+                List<KhachHang> khachHangs = chiTietPhieuThue.getKhachHangs();
+                for (KhachHang khachHang:khachHangs) {
+                    ChiTietKhachThueResponse khachThueResponse = new ChiTietKhachThueResponse(
+                            thongTinPhong.getMaPhong(), khachHang.getHoTen(), khachHang.getSdt(),
+                            chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi()
+                    );
+                    chiTietKhachThueResponses.add(khachThueResponse);
+                }
+            }
+        }
+        return chiTietKhachThueResponses;
+    }
+
+    @Override
     public HoaDon getHoaDonByChiTietPhieuThue(Integer id) throws Exception {
         ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(id);
         return chiTietPhieuThue.getHoaDon();
@@ -198,13 +229,51 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
 
         //tao mot hoa don moi
         HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(idNhanVien, tongTien, ngayTao);
+        String soHoaDon = hoaDonResponse.getSoHoaDon();
         //them hoa don vao chi tiet phieu thue
         themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
         //dat da thanh toan = true
         thanhToanChiTietPhieuThue(idChiTietPhieuThue);
-        //them hoa don vao chi tiet phu thu
+        //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
+        phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
         // them hoa don vao chi tiet su dung dich vu
+        chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
         return hoaDonResponse;
+    }
+
+    @Override
+    public HoaDonResponse traPhongKhachSanKhachDoan(Integer idNhanVien, Long tongTien, LocalDate ngayTao, List<Integer> idChiTietPhieuThues) throws Exception {
+        //tao mot hoa don moi
+        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(idNhanVien, tongTien, ngayTao);
+        String soHoaDon = hoaDonResponse.getSoHoaDon();
+        for (int idChiTietPhieuThue: idChiTietPhieuThues) {
+            //them hoa don vao chi tiet phieu thue
+            themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
+            //dat da thanh toan = true
+            thanhToanChiTietPhieuThue(idChiTietPhieuThue);
+            //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
+            phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+            // them hoa don vao chi tiet su dung dich vu
+            chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+        }
+        return hoaDonResponse;
+    }
+
+    @Override
+    public boolean doiPhong(int idChiTietPhieuThue, String maPhong) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(idChiTietPhieuThue);
+        Phong phong = phongService.getPhongById(maPhong);
+        if(thongTinHangPhongService.kiemTraPhongHangPhongTrong(phong.getHangPhong().getIdHangPhong(),chiTietPhieuThue.getNgayDen(),
+                chiTietPhieuThue.getNgayDi(), 1)){
+            if(phong.getHangPhong().getIdHangPhong() == chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong()) {
+                chiTietPhieuThue.setPhong(phong);
+                repository.save(chiTietPhieuThue);
+                return true;
+            }else{
+                throw new Exception("Chỉ có thể đổi phòng thuộc cùng một hạng phòng!");
+            }
+        }
+        return false;
     }
 
     @Override

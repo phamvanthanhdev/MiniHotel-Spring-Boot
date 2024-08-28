@@ -1,7 +1,7 @@
 package com.demo.MiniHotel.modules.thongtin_hangphong.implement;
 
 import com.demo.MiniHotel.model.ThongTinHangPhong;
-import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhong2;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
@@ -185,6 +185,28 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
         return responses;
     }
 
+    @Override
+    public List<ThongTinHangPhongAdminResponse> layThongTinHangPhongAdminTheoThoiGian(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception {
+        List<ThongTinHangPhong> thongTinHangPhongs = repository.findAll();
+        List<ThongTinHangPhongAdminResponse> responses = new ArrayList<>();
+        for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
+            int soLuongTrong = laySoLuongHangPhongTrong(ngayDenDat, ngayDiDat, thongTinHangPhong.getIdHangPhong());
+            responses.add(convertThongTinHangPhongAdminResponse(thongTinHangPhong, soLuongTrong));
+        }
+        return responses;
+    }
+
+    @Override
+    public List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongTheoGia(LocalDate ngayDenDat, LocalDate ngayDiDat, Long giaMin, Long giaMax) throws Exception {
+        List<ThongTinHangPhongUserResponse> thongTinHangPhongUserResponses = getThongTinHangPhongTheoThoiGian(ngayDenDat, ngayDiDat);
+        List<ThongTinHangPhongUserResponse> thongTinHangPhongTimKiem = new ArrayList<>();
+        for (ThongTinHangPhongUserResponse thongTinHangPhong: thongTinHangPhongUserResponses) {
+            if(thongTinHangPhong.getGiaGoc() >= giaMin && thongTinHangPhong.getGiaGoc() <= giaMax )
+                thongTinHangPhongTimKiem.add(thongTinHangPhong);
+        }
+        return thongTinHangPhongTimKiem;
+    }
+
     public ThongTinHangPhongUserResponse convertThongTinHangPhongUserResponse(ThongTinHangPhong thongTinHangPhong, int soLuongTrong) throws Exception {
         byte[] photoBytes = null;
         Blob photoBlob = thongTinHangPhong.getHinhAnh();
@@ -211,29 +233,11 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
         );
     }
 
-    public ThongTinHangPhongUserResponse convertThongTinHangPhong2Response(ThongTinHangPhong2 thongTinHangPhong2) throws Exception {
-        byte[] photoBytes = null;
-        Blob photoBlob = thongTinHangPhong2.getHinhAnh();
-        if(photoBlob!=null){
-            try {
-                photoBytes = photoBlob.getBytes(1, (int)photoBlob.length());
-            }catch (SQLException e){
-                throw new Exception("Error retrieving photo");
-            }
-        }
-        String base64Photo = Base64.encodeBase64String(photoBytes);
-        return new ThongTinHangPhongUserResponse(
-                thongTinHangPhong2.getIdHangPhong(),
-                thongTinHangPhong2.getTenHangPhong(),
-                thongTinHangPhong2.getMoTa(),
-                base64Photo,
-                thongTinHangPhong2.getTenKieuPhong(),
-                thongTinHangPhong2.getTenLoaiPhong(),
-                thongTinHangPhong2.getPhanTramGiam(),
-                thongTinHangPhong2.getSoNguoiToiDa(),
-                thongTinHangPhong2.getGiaGoc(),
-                thongTinHangPhong2.getGiaKhuyenMai(),
-                thongTinHangPhong2.getSoLuongTrong()
-        );
+    public ThongTinHangPhongAdminResponse convertThongTinHangPhongAdminResponse(ThongTinHangPhong thongTinHangPhong, int soLuongTrong){
+        return new ThongTinHangPhongAdminResponse(thongTinHangPhong.getIdHangPhong(),
+                thongTinHangPhong.getTenHangPhong(), soLuongTrong,
+                thongTinHangPhong.getGiaGoc(), thongTinHangPhong.getGiaKhuyenMai());
     }
+
+
 }

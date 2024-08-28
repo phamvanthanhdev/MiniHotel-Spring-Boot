@@ -196,6 +196,21 @@ public class PhieuThueImplement implements IPhieuThueService {
         return responses;
     }
 
+    // Kiểm tra số lượng phòng trả có phải là phòng cuối cùng không
+    @Override
+    public Boolean kiemTraChiTietPhieuThueCuoiCung(int soLuong, int idPhieuThue) throws Exception {
+        List<ChiTietPhieuThue> chiTietPhieuThues = chiTietPhieuThueService.getChiTietPhieuThueByIdPhieuThue(idPhieuThue);
+        List<ChiTietPhieuThue> chiTietPhieuThuesChuaThanhToan = new ArrayList<>();
+        for (ChiTietPhieuThue chiTietPhieuThue: chiTietPhieuThues) {
+            if(!chiTietPhieuThue.getDaThanhToan())
+                chiTietPhieuThuesChuaThanhToan.add(chiTietPhieuThue);
+        }
+        if(soLuong >= chiTietPhieuThuesChuaThanhToan.size()){
+            return true;
+        }
+        return false;
+    }
+
 
     private PhieuThueResponse convertPhieuThuePhongResponse(PhieuThuePhong phieuThuePhong){
         Integer idPhieuDat = phieuThuePhong.getPhieuDatPhong() == null ? null : phieuThuePhong.getPhieuDatPhong().getIdPhieuDat();

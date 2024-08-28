@@ -1,6 +1,7 @@
 package com.demo.MiniHotel.modules.chitiet_phieuthue.controller;
 
 import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
@@ -60,16 +61,39 @@ public class ChiTietPhieuThueController {
 
     //Thêm khách hàng vào chi tiết phiếu thuê
     @PostMapping("/add-khach-thue")
-    public ResponseEntity<ChiTietPhieuThue> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request) throws Exception {
-        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.addKhachHangToChiTietPhieuThue(request);
-        return new ResponseEntity<>(chiTietPhieuThue, HttpStatus.OK);
+    public ResponseEntity<ResultResponse> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request){
+//        ChiTietPhieuThue chiTietPhieuThue = null;
+        try {
+            chiTietPhieuThueService.addKhachHangToChiTietPhieuThue(request);
+            ResultResponse response = new ResultResponse(200, "Thêm khách lưu trú thành công!");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ResultResponse response = new ResultResponse(400, "Thêm khách lưu trú không thành công! Vui lòng thử lại");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
     }
 
     //Xóa khách hàng khỏi chi tiết phiếu thuê
     @DeleteMapping("/del-khach-thue")
-    public ResponseEntity<ChiTietPhieuThue> removeKhachHangToChiTietPhieuThue(@RequestBody DelChiTietKhachThueRequest request) throws Exception {
-        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.removeKhachHangInChiTietPhieuThue(request);
-        return new ResponseEntity<>(chiTietPhieuThue, HttpStatus.OK);
+    public ResponseEntity<ResultResponse> removeKhachHangToChiTietPhieuThue(@RequestParam("idChiTietPhieuThue") int idChiTietPhieuThue,
+                                                                            @RequestParam("idKhachThue") int idKhachThue) throws Exception {
+        DelChiTietKhachThueRequest delChiTietKhachThueRequest = new DelChiTietKhachThueRequest();
+        delChiTietKhachThueRequest.setIdChiTietPhieuThue(idChiTietPhieuThue);
+        delChiTietKhachThueRequest.setIdKhachThue(idKhachThue);
+        try {
+            chiTietPhieuThueService.removeKhachHangInChiTietPhieuThue(delChiTietKhachThueRequest);
+            ResultResponse response = new ResultResponse(200, "Xóa khách lưu trú thành công!");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ResultResponse response = new ResultResponse(400, "Xóa khách lưu trú không thành công! Vui lòng thử lại");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/khach-thue/hien-tai")
+    public ResponseEntity<List<ChiTietKhachThueResponse>> getKhachThueHienTai() throws Exception {
+        List<ChiTietKhachThueResponse> responses = chiTietPhieuThueService.getKhachThueHienTai();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     //Thêm một chi tiết sử dụng dịch vụ cho một chi tiết phiếu thue
@@ -102,12 +126,46 @@ public class ChiTietPhieuThueController {
 
     //Hoàn thành trả phòng
     @PostMapping("/tra-phong")
-    public ResponseEntity<HoaDonResponse> traPhongKhachSan(@RequestParam("idNhanVien") Integer idNhanVien,
+    public ResponseEntity<HoaDonResponse> traPhongKhachSanKhachLe(@RequestParam("idNhanVien") Integer idNhanVien,
                                                    @RequestParam("tongTien") Long tongTien,
                                                    @RequestParam("ngayTao") LocalDate ngayTao,
                                                    @RequestParam("idChiTietPhieuThue") Integer idChiTietPhieuThue) throws Exception {
         HoaDonResponse hoaDonResponse = chiTietPhieuThueService.traPhongKhachSan(idNhanVien, tongTien, ngayTao, idChiTietPhieuThue);
         return new ResponseEntity<>(hoaDonResponse, HttpStatus.OK);
+    }
+
+    //Hoàn thành trả phòng khach doan
+    @PostMapping("/tra-phong/khach-doan")
+    public ResponseEntity<HoaDonResponse> traPhongKhachSanKhachDoan(@RequestParam("idNhanVien") Integer idNhanVien,
+                                                           @RequestParam("tongTien") Long tongTien,
+                                                           @RequestParam("ngayTao") LocalDate ngayTao,
+                                                           @RequestParam("idChiTietPhieuThues") List<Integer> idChiTietPhieuThues) throws Exception {
+        HoaDonResponse hoaDonResponse = chiTietPhieuThueService.traPhongKhachSanKhachDoan(idNhanVien, tongTien, ngayTao, idChiTietPhieuThues);
+        return new ResponseEntity<>(hoaDonResponse, HttpStatus.OK);
+    }
+
+    //Đổi phòng khách sạn
+    @PutMapping("/doi-phong")
+    public ResponseEntity<ResultResponse> doiPhongKhachSan(@RequestParam("idChiTietPhieuThue") Integer idChiTietPhieuThue,
+                                                           @RequestParam("maPhong") String maPhong) {
+        boolean result = false;
+        try {
+            result = chiTietPhieuThueService.doiPhong(idChiTietPhieuThue, maPhong);
+        } catch (Exception e) {
+            ResultResponse response = new ResultResponse(400,
+                    e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
+        if(result){
+            ResultResponse response = new ResultResponse(200,
+                    "Đổi phòng thành công!");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }else{
+            ResultResponse response = new ResultResponse(400,
+                    "Hạng phòng này không còn trống!");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
     }
 
     //

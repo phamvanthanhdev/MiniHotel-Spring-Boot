@@ -7,8 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaiKhoanRequest {
+public class DangKyRequest {
+    private String cmnd;
+    private String hoTen;
+    private String sdt;
+    private String diaChi;
+    private String email;
+
     private String tenDangNhap;
     private String matKhau;
-    private Integer idNhomQuyen;
 }

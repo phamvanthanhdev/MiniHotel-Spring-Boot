@@ -8,6 +8,7 @@ import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse2;
 import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatRequest;
 import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatThoiGianResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,4 +24,6 @@ public interface IPhieuDatService {
     public List<ChiTietPhieuDatResponse> getChiTietPhieuDatsByIdPhieuDat(Integer idPhieuDat) throws Exception;
     public List<ChiTietPhieuDatResponse2> getChiTietPhieuDatsByIdPhieuDat2(Integer idPhieuDat) throws Exception;
     public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoNgay(LocalDate ngay) ;
+    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoGian(LocalDate ngayBatDauTim,LocalDate ngayKetThucTim) ;
+    public List<PhieuDatResponse> getPhieuDatTheoCMND(String cmnd) throws Exception;
 }

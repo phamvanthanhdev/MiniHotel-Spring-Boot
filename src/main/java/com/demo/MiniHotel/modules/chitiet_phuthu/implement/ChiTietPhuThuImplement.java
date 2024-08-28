@@ -131,14 +131,15 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
     }
 
     @Override
-    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhieuThue, Integer idDichVu, String soHoaDon) throws Exception {
+    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhieuThue, Integer idPhuThu, String soHoaDon) throws Exception {
         IdChiTietPhuThuEmb idChiTietPhuThuEmb =
-                new IdChiTietPhuThuEmb(idChiTietPhieuThue, idDichVu);
+                new IdChiTietPhuThuEmb(idChiTietPhieuThue, idPhuThu);
         Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
-        if(chiTietPhuThuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
+        if(chiTietPhuThuOptional.isEmpty()) throw new Exception("ChiTietPhuThu not found.");
         ChiTietPhuThu chiTietPhuThu = chiTietPhuThuOptional.get();
         HoaDon hoaDon = hoaDonService.getHoaDonById(soHoaDon);
         chiTietPhuThu.setHoaDon(hoaDon);
+        chiTietPhuThu.setDaThanhToan(true);
 
         return repository.save(chiTietPhuThu);
     }
@@ -151,4 +152,17 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
         if(chiTietPhuThuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
         return chiTietPhuThuOptional.get().getHoaDon();
     }
+
+    @Override
+    public List<ChiTietPhuThu> thanhToanChiTietPhuThuCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception {
+        List<ChiTietPhuThu> chiTietPhuThus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
+        for (ChiTietPhuThu chiTietPhuThu:chiTietPhuThus) {
+            addHoaDonToChiTietPhuThu(idChiTietPhieuThue,
+                    chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
+                    soHoaDon);
+        }
+        return chiTietPhuThus;
+    }
+
+
 }

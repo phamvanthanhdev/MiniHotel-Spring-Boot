@@ -14,6 +14,8 @@ public interface IChiTietPhuThuService {
     public List<ChiTietPhuThuResponse> getChiTietPhuThuByIdChiTietPhieuThue(Integer idChiTietPhieuThue) throws Exception;
     public ChiTietPhuThu updateChiTietDichVu(ChiTietPhuThuRequest request) throws Exception;
     public void deleteChiTietPhuThu(IdChiTietPhuThuEmb idChiTietPhuThuEmb) throws Exception;
-    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhieuThue, Integer idDichVu, String soHoaDon) throws Exception;
+    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhieuThue, Integer idPhuThu, String soHoaDon) throws Exception;
     public HoaDon getHoaDonInChiTietPhuThu(Integer idChiTietPhieuThue, Integer idDichVu) throws Exception;
+
+    public List<ChiTietPhuThu> thanhToanChiTietPhuThuCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception;
 }

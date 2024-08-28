@@ -1,8 +1,6 @@
 package com.demo.MiniHotel.modules.hoadon.controller;
 
-import com.demo.MiniHotel.model.ChiTietPhieuThue;
-import com.demo.MiniHotel.model.ChiTietSuDungDichVu;
-import com.demo.MiniHotel.model.HoaDon;
+import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonRequest;
 import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -60,4 +59,22 @@ public class HoaDonController {
         return new ResponseEntity<>(chiTietSuDungDichVus, HttpStatus.OK);
     }
 
+    @GetMapping("/hoa-don-ngay")
+    public ResponseEntity<List<HoaDonNgay>> getHoaDonNgaysHienTai(){
+        List<HoaDonNgay> hoaDonNgays = HoaDonService.getHoaDonNgaysHienTai();
+        return new ResponseEntity<>(hoaDonNgays, HttpStatus.OK);
+    }
+
+    @GetMapping("/theo-ngay")
+    public ResponseEntity<List<HoaDonNgay>> getHoaDonNgaysTheoNgay(@RequestParam("ngay")LocalDate ngay){
+        List<HoaDonNgay> hoaDonNgays = HoaDonService.getHoaDonNgaysTheoNgay(ngay);
+        return new ResponseEntity<>(hoaDonNgays, HttpStatus.OK);
+    }
+
+    @GetMapping("/doanh-thu/theo-ngay")
+    public ResponseEntity<List<DoanhThuTheoNgay>> getDoanhThuTheoNgay(@RequestParam("ngayBatDau")LocalDate ngayBatDau,
+                                                                      @RequestParam("ngayKetThuc")LocalDate ngayKetThuc){
+        List<DoanhThuTheoNgay> doanhThuTheoNgays = HoaDonService.getDoanhThuTheoNgay(ngayBatDau, ngayKetThuc);
+        return new ResponseEntity<>(doanhThuTheoNgays, HttpStatus.OK);
+    }
 }

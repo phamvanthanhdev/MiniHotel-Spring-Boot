@@ -178,6 +178,34 @@ public class PhieuDatImplement implements IPhieuDatService {
         return responses;
     }
 
+    @Override
+    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoGian(LocalDate ngayBatDauTim, LocalDate ngayKetThucTim) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuDatTheoThoiGian", PhieuDatPhong.class)
+                .registerStoredProcedureParameter("ngay_bat_dau_tim", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_ket_thuc_tim", LocalDate.class, ParameterMode.IN)
+                .setParameter("ngay_bat_dau_tim", ngayBatDauTim)
+                .setParameter("ngay_ket_thuc_tim", ngayKetThucTim);
+        List<PhieuDatPhong> phieuDatPhongs = query.getResultList();
+        List<PhieuDatThoiGianResponse> responses = new ArrayList<>();
+        for (PhieuDatPhong phieuDatPhong: phieuDatPhongs) {
+            responses.add(convertPhieuDatThoiGianResponse(phieuDatPhong));
+        }
+        return responses;
+    }
+
+    @Override
+    public List<PhieuDatResponse> getPhieuDatTheoCMND(String cmnd) throws Exception {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuDatKhachHang", PhieuDatPhong.class)
+                .registerStoredProcedureParameter("cmnd_tim_kiem", String.class, ParameterMode.IN)
+                .setParameter("cmnd_tim_kiem", cmnd);
+        List<PhieuDatPhong> phieuDatPhongs = query.getResultList();
+        List<PhieuDatResponse> responses = new ArrayList<>();
+        for (PhieuDatPhong phieuDatPhong: phieuDatPhongs) {
+            responses.add(getPhieuDatResponse(phieuDatPhong));
+        }
+        return responses;
+    }
+
 
     public PhieuDatResponse getPhieuDatResponse(PhieuDatPhong phieuDatPhong) throws Exception {
         return new PhieuDatResponse(

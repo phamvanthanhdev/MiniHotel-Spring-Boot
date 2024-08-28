@@ -2,6 +2,7 @@ package com.demo.MiniHotel.modules.thongtin_hangphong.service;
 
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 
 import java.time.LocalDate;
@@ -21,4 +22,8 @@ public interface IThongTinHangPhongService {
     public Boolean kiemTraPhongDaThue(String maPhong, LocalDate ngayDenDat, LocalDate ngayDiDat);
 
     List<ThongTinHangPhongUserResponse> sapXepHangPhongTheoSoLuongDatThue(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
+
+    List<ThongTinHangPhongAdminResponse> layThongTinHangPhongAdminTheoThoiGian(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
+
+    List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongTheoGia(LocalDate ngayDenDat, LocalDate ngayDiDat, Long giaMin, Long giaMax) throws Exception;
 }

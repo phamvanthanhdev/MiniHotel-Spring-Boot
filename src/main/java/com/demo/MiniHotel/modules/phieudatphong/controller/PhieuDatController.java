@@ -52,6 +52,13 @@ public class PhieuDatController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
+    @GetMapping("/thoi-gian")
+    public ResponseEntity<List<PhieuDatThoiGianResponse>> getPhieuDatTheoThoiGian(@RequestParam("ngayBatDauTim")LocalDate ngayBatDauTim,
+                                                                                  @RequestParam("ngayKetThucTim")LocalDate ngayKetThucTim){
+        List<PhieuDatThoiGianResponse> responses = PhieuDatPhongService.getPhieuDatPhongTheoGian(ngayBatDauTim, ngayKetThucTim);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
     @GetMapping("/khach-hang/{idKhachHang}")
     public ResponseEntity<List<PhieuDatResponse>> getPhieuDatByIdKhachHang(
                                                         @PathVariable("idKhachHang") Integer idKhachHang) throws Exception {
@@ -90,7 +97,13 @@ public class PhieuDatController {
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
 
-
+    @GetMapping("/khach-hang")
+    public ResponseEntity<List<PhieuDatResponse>> getPhieuDatPhongTheoCMND(@RequestParam("cmnd") String cmnd) throws Exception {
+        List<PhieuDatResponse> responses = PhieuDatPhongService.getPhieuDatTheoCMND(cmnd);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
 
     //Nhan vien xac nhan don dat phong
+
+
 }

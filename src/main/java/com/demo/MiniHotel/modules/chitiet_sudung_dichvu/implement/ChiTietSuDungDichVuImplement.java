@@ -139,6 +139,7 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
         HoaDon hoaDon = hoaDonService.getHoaDonById(soHoaDon);
         chiTietSuDungDichVu.setHoaDon(hoaDon);
+        chiTietSuDungDichVu.setDaThanhToan(true);
 
         return repository.save(chiTietSuDungDichVu);
     }
@@ -150,5 +151,16 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
         if(chiTietSuDungDichVuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
         return chiTietSuDungDichVuOptional.get().getHoaDon();
+    }
+
+    @Override
+    public List<ChiTietSuDungDichVu> thanhToanChiTietSuDungDVCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception {
+        List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
+        for (ChiTietSuDungDichVu chiTietSuDungDichVu:chiTietSuDungDichVus) {
+            addHoaDonToChiTietSuDungDichVu(idChiTietPhieuThue,
+                    chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
+                    soHoaDon);
+        }
+        return chiTietSuDungDichVus;
     }
 }

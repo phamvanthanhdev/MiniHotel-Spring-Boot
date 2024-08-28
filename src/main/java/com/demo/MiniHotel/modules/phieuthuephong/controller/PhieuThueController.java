@@ -90,6 +90,15 @@ public class PhieuThueController {
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
 
+    //Kiểm tra số lượng phòng trả được chọn có phải là tất cả phòng trong phiếu thuê
+    @GetMapping("/kiem-tra-so-luong")
+    public ResponseEntity<Boolean> kiemTraPhieuThueCuoi(@RequestParam("idPhieuThue") Integer idPhieuThue,
+                                                        @RequestParam("soLuong") Integer soLuong) throws Exception {
+        Boolean result = PhieuThuePhongService.kiemTraChiTietPhieuThueCuoiCung(soLuong, idPhieuThue);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+
     //Thêm khách hàng vào chi tiết phiếu thuê
     /*@PostMapping("/khach-thue")
     public ResponseEntity<ChiTietPhieuThue> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request) throws Exception {

@@ -1,8 +1,6 @@
 package com.demo.MiniHotel.modules.hoadon.service;
 
-import com.demo.MiniHotel.model.ChiTietPhieuThue;
-import com.demo.MiniHotel.model.ChiTietSuDungDichVu;
-import com.demo.MiniHotel.model.HoaDon;
+import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonRequest;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
 
@@ -21,5 +19,7 @@ public interface IHoaDonService {
 
     HoaDonResponse themHoaDonMoi(Integer idNhanVien, Long tongTien, LocalDate ngayTao) throws Exception;
 
-    //ChiTietPhuThu
+    List<HoaDonNgay> getHoaDonNgaysHienTai();
+    List<HoaDonNgay> getHoaDonNgaysTheoNgay(LocalDate ngay);
+    List<DoanhThuTheoNgay> getDoanhThuTheoNgay(LocalDate ngayBatDau, LocalDate ngayKetThuc);
 }

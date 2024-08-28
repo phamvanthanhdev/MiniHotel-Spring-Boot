@@ -22,4 +22,5 @@ public interface IPhieuThueService {
 
     PhieuThueResponse getPhieuThuePhongResonseById(Integer id) throws Exception;
     public List<PhieuThueResponse> timKiemPhieuThueTheoCmnd(String cmnd) throws Exception;
+    public Boolean kiemTraChiTietPhieuThueCuoiCung(int soLuong, int idPhieuThue) throws Exception;
 }

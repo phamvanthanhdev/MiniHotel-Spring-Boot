@@ -22,4 +22,5 @@ public interface IChiTietSuDungDichVuService {
 
     public ChiTietSuDungDichVu addHoaDonToChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu, String soHoaDon) throws Exception;
     public HoaDon getHoaDonInChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu) throws Exception;
+    public List<ChiTietSuDungDichVu> thanhToanChiTietSuDungDVCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception;
 }

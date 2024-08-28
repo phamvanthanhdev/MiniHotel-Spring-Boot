@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.thongtin_phong.implement;
 
+import com.demo.MiniHotel.model.DoanhThuTheoNgay;
 import com.demo.MiniHotel.model.Phong;
 import com.demo.MiniHotel.model.ThongTinPhong;
 import com.demo.MiniHotel.model.ThongTinPhongHienTai;

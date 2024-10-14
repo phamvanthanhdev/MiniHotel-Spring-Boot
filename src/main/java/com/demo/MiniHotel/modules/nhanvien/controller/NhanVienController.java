@@ -45,4 +45,10 @@ public class NhanVienController {
         nhanVienService.deleteNhanVien(id);
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
+
+    @GetMapping("/ten-dang-nhap")
+    public ResponseEntity<NhanVien> getNhanVienByTenDangNhap() throws Exception {
+        NhanVien nhanVien = nhanVienService.getNhanVienByToken();
+        return new ResponseEntity<>(nhanVien, HttpStatus.OK);
+    }
 }

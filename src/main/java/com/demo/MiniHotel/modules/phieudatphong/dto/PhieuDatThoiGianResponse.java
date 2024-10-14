@@ -20,5 +20,5 @@ public class PhieuDatThoiGianResponse {
     private String tenKhachHang;
     private String cmnd;
     private Integer idNhanVien;
-    private Boolean trangThaiHuy;
+    private Integer trangThaiHuy;
 }

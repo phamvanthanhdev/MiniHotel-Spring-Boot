@@ -1,12 +1,15 @@
 package com.demo.MiniHotel.modules.kieuphong.implement;
 
+import com.demo.MiniHotel.model.HangPhong;
 import com.demo.MiniHotel.model.KieuPhong;
 import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongRequest;
+import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongResponse;
 import com.demo.MiniHotel.modules.kieuphong.service.IKieuPhongService;
 import com.demo.MiniHotel.repository.KieuPhongRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,5 +57,27 @@ public class KieuPhongImplement implements IKieuPhongService {
             throw new Exception("KieuPhong not found");
         }
         repository.deleteById(id);
+    }
+
+    @Override
+    public List<KieuPhongResponse> getKieuPhongResponses() {
+        List<KieuPhong> kieuPhongs = repository.findAll();
+        List<KieuPhongResponse> kieuPhongResponses = new ArrayList<>();
+        for (KieuPhong kieuPhong: kieuPhongs) {
+            int soLuong = 0;
+            for (HangPhong hangPhong:kieuPhong.getHangPhongs()) {
+                soLuong += hangPhong.getPhongs().size();
+            }
+            kieuPhongResponses.add(convertKieuPhongResponse(kieuPhong, soLuong));
+        }
+        return kieuPhongResponses;
+    }
+
+    public KieuPhongResponse convertKieuPhongResponse(KieuPhong kieuPhong, int soLuong){
+        return KieuPhongResponse.builder()
+                .tenKieuPhong(kieuPhong.getTenKieuPhong())
+                .moTa(kieuPhong.getMoTa())
+                .soLuong(soLuong)
+                .build();
     }
 }

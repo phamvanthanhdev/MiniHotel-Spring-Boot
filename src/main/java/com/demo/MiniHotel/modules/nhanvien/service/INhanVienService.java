@@ -11,4 +11,5 @@ public interface INhanVienService {
     public NhanVien getNhanVienById(Integer id) throws Exception;
     public NhanVien updateNhanVien(NhanVienRequest request, Integer id) throws Exception;
     public void deleteNhanVien(Integer id) throws Exception;
+    public NhanVien getNhanVienByToken() throws Exception;
 }

@@ -32,7 +32,9 @@ public class PhieuDatPhong {
     @Column(name = "tien_tam_ung")
     private Long tienTamUng;
     @Column(name = "trang_thai_huy", nullable = false)
-    private Boolean trangThaiHuy;
+    private int trangThaiHuy;
+    @Column(name = "tien_tra_lai")
+    private Long tienTraLai;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)

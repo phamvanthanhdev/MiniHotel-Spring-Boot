@@ -45,7 +45,7 @@ public class HoaDonImplement implements IHoaDonService {
         HoaDon hoaDon = new HoaDon();
         hoaDon.setSoHoaDon(generateSoHoaDon());
         hoaDon.setTongTien(request.getTongTien());
-        hoaDon.setNgayTao(request.getNgayTao());
+        hoaDon.setNgayTao(LocalDate.now());
 
         hoaDon.setNhanVien(nhanVien);
 
@@ -83,7 +83,7 @@ public class HoaDonImplement implements IHoaDonService {
         NhanVien nhanVien = nhanVienService.getNhanVienById(request.getIdNhanVien());
         HoaDon hoaDon = getHoaDonById(id);
         hoaDon.setTongTien(request.getTongTien());
-        hoaDon.setNgayTao(request.getNgayTao());
+        hoaDon.setNgayTao(LocalDate.now());
 
         hoaDon.setNhanVien(nhanVien);
 
@@ -117,18 +117,19 @@ public class HoaDonImplement implements IHoaDonService {
     }
 
     @Override
-    public HoaDonResponse themHoaDonMoi(Integer idNhanVien, Long tongTien, LocalDate ngayTao) throws Exception {
-        HoaDonRequest request = new HoaDonRequest();
-        request.setIdNhanVien(idNhanVien);
-        request.setTongTien(tongTien);
-        request.setNgayTao(ngayTao);
+    public HoaDonResponse themHoaDonMoi(Long tongTien) throws Exception {
+//        HoaDonRequest request = new HoaDonRequest();
+//        request.setIdNhanVien(idNhanVien);
+//        request.setTongTien(tongTien);
+//        request.setNgayTao(ngayTao);
 
         HoaDon hoaDon = new HoaDon();
         hoaDon.setSoHoaDon(generateSoHoaDon());
-        hoaDon.setTongTien(request.getTongTien());
-        hoaDon.setNgayTao(request.getNgayTao());
+        hoaDon.setTongTien(tongTien);
+        hoaDon.setNgayTao(LocalDate.now());
 
-        NhanVien nhanVien = nhanVienService.getNhanVienById(request.getIdNhanVien());
+//        NhanVien nhanVien = nhanVienService.getNhanVienById(request.getIdNhanVien());
+        NhanVien nhanVien = nhanVienService.getNhanVienByToken();
         hoaDon.setNhanVien(nhanVien);
 
         return convertHoaDonResponse(repository.save(hoaDon));

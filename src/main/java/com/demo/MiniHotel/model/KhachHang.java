@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -32,6 +33,10 @@ public class KhachHang {
     private String maSoThue;
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "gioi_tinh", nullable = false)
+    private boolean gioiTinh;
+    @Column(name = "ngay_sinh")
+    private LocalDate ngaySinh;
 
     @JsonIgnore
     @OneToOne(fetch = FetchType.EAGER)

@@ -13,6 +13,7 @@ import com.demo.MiniHotel.repository.DichVuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +36,8 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
             ChiTietSuDungDichVu chiTietSuDungDichVuNew = new ChiTietSuDungDichVu();
             chiTietSuDungDichVuNew.setIdChiTietSuDungDichVuEmb(idChiTietSuDungDichVuEmb);
             chiTietSuDungDichVuNew.setDonGia(request.getDonGia());
-            chiTietSuDungDichVuNew.setNgayTao(request.getNgayTao());
-            chiTietSuDungDichVuNew.setDaThanhToan(false);
+            chiTietSuDungDichVuNew.setNgayTao(LocalDate.now());
+            chiTietSuDungDichVuNew.setDaThanhToan(request.getDaThanhToan());
 
             Optional<DichVu> dichVuOptional = dichVuRepository.findById(request.getIdDichVu());
             if (dichVuOptional.isEmpty()) {
@@ -55,6 +56,8 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
             repository.save(chiTietSuDungDichVuNew);
         }else{
             ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
+            chiTietSuDungDichVu.setDaThanhToan(request.getDaThanhToan());
+            chiTietSuDungDichVu.setDonGia(request.getDonGia());
             if(chiTietSuDungDichVu.getSoLuong() + request.getSoLuong() <= 0){
                 deleteChiTietSuDungDichVu(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb());
             }else {
@@ -97,8 +100,7 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
         if(request.getDonGia() != null)
             chiTietSuDungDichVu.setDonGia(request.getDonGia());
-        if(request.getNgayTao() != null)
-            chiTietSuDungDichVu.setNgayTao(request.getNgayTao());
+
         if(request.getDaThanhToan() != null)
             chiTietSuDungDichVu.setDaThanhToan(request.getDaThanhToan());
         if(request.getIdDichVu() != null) {
@@ -113,8 +115,8 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
                 throw new Exception("ChiTietPhieuThue not found!");
             }
         }
-        if(request.getSoHoaDon() != null)
-            chiTietSuDungDichVu.setHoaDon(hoaDonService.getHoaDonById(request.getSoHoaDon()));
+//        if(request.getSoHoaDon() != null)
+//            chiTietSuDungDichVu.setHoaDon(hoaDonService.getHoaDonById(request.getSoHoaDon()));
 
         return repository.save(chiTietSuDungDichVu);
     }
@@ -157,9 +159,11 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     public List<ChiTietSuDungDichVu> thanhToanChiTietSuDungDVCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception {
         List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
         for (ChiTietSuDungDichVu chiTietSuDungDichVu:chiTietSuDungDichVus) {
-            addHoaDonToChiTietSuDungDichVu(idChiTietPhieuThue,
-                    chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
-                    soHoaDon);
+            if(!chiTietSuDungDichVu.getDaThanhToan()) {
+                addHoaDonToChiTietSuDungDichVu(idChiTietPhieuThue,
+                        chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
+                        soHoaDon);
+            }
         }
         return chiTietSuDungDichVus;
     }

@@ -2,6 +2,7 @@ package com.demo.MiniHotel.modules.kieuphong.controller;
 
 import com.demo.MiniHotel.model.KieuPhong;
 import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongRequest;
+import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongResponse;
 import com.demo.MiniHotel.modules.kieuphong.service.IKieuPhongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,5 +46,11 @@ public class KieuPhongController {
     public ResponseEntity<String> deleteKieuPhong(@PathVariable("id") Integer id) throws Exception {
         KieuPhongService.deleteKieuPhong(id);
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+    }
+
+    @GetMapping("/so-luong")
+    public ResponseEntity<List<KieuPhongResponse>> getKieuPhongUserResponse(){
+        List<KieuPhongResponse> responses = KieuPhongService.getKieuPhongResponses();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

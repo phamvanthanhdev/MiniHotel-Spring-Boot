@@ -22,8 +22,12 @@ public interface IThongTinHangPhongService {
     public Boolean kiemTraPhongDaThue(String maPhong, LocalDate ngayDenDat, LocalDate ngayDiDat);
 
     List<ThongTinHangPhongUserResponse> sapXepHangPhongTheoSoLuongDatThue(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
+    List<ThongTinHangPhongUserResponse> sapXepHangPhongTheoGiamGia(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
 
     List<ThongTinHangPhongAdminResponse> layThongTinHangPhongAdminTheoThoiGian(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
 
-    List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongTheoGia(LocalDate ngayDenDat, LocalDate ngayDiDat, Long giaMin, Long giaMax) throws Exception;
+    List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongTheoGia(LocalDate ngayDenDat, LocalDate ngayDiDat,
+                                                                        Long giaMin, Long giaMax) throws Exception;
+    public List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongUser(LocalDate ngayDenDat, LocalDate ngayDiDat,
+                                                                            Long giaMin, Long giaMax, String noiDung) throws Exception;
 }

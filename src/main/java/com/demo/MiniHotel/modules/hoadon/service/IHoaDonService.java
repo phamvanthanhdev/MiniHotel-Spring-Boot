@@ -17,7 +17,7 @@ public interface IHoaDonService {
     public List<ChiTietPhieuThue> getChiTietPhieuThueBySoHoaDon(String soHoaDon) throws Exception;
     public List<ChiTietSuDungDichVu> getChiTietSuDungDichVuBySoHoaDon(String soHoaDon) throws Exception;
 
-    HoaDonResponse themHoaDonMoi(Integer idNhanVien, Long tongTien, LocalDate ngayTao) throws Exception;
+    HoaDonResponse themHoaDonMoi(Long tongTien) throws Exception;
 
     List<HoaDonNgay> getHoaDonNgaysHienTai();
     List<HoaDonNgay> getHoaDonNgaysTheoNgay(LocalDate ngay);

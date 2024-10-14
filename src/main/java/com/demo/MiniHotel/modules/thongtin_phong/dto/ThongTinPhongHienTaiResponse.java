@@ -20,6 +20,7 @@ public class ThongTinPhongHienTaiResponse {
     private String tenTrangThai;
     private Boolean daThue;
     private Integer idChiTietPhieuThue;
+    private Integer idPhieuThue;
     private LocalDate ngayDen;
     private LocalDate ngayDi;
 }

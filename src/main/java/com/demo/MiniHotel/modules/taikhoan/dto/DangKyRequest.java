@@ -1,19 +1,37 @@
 package com.demo.MiniHotel.modules.taikhoan.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DangKyRequest {
-    private String cmnd;
-    private String hoTen;
-    private String sdt;
-    private String diaChi;
-    private String email;
-
+    @Size(min = 6, message = "USERNAME_INVALID")
     private String tenDangNhap;
+    @Size(min = 8, message = "PASSWORD_INVALID")
     private String matKhau;
+    @Size(min = 12, max = 12, message = "CCCD_INVALID")
+    private String cmnd;
+    @NotNull(message = "NAME_INVALID")
+    @NotBlank(message = "NAME_INVALID")
+    private String hoTen;
+    @Size(min = 10, message = "SDT_INVALID")
+    private String sdt;
+    @NotNull(message = "DIACHI_INVALID")
+    @NotBlank(message = "DIACHI_INVALID")
+    private String diaChi;
+    @Email(message = "EMAIL_INVALID")
+    private String email;
+    @NotNull(message = "GIOITINH_INVALID")
+    private boolean gioiTinh;
+    @NotNull(message = "NGAYSINH_INVALID")
+    private LocalDate ngaySinh;
 }

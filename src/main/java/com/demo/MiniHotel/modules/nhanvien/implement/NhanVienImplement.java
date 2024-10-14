@@ -11,6 +11,8 @@ import com.demo.MiniHotel.modules.bophan.service.IBoPhanService;
 import com.demo.MiniHotel.modules.nhanvien.service.INhanVienService;
 import com.demo.MiniHotel.modules.nhomquyen.service.INhomQuyenService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NhanVienImplement implements INhanVienService {
     private final NhanVienRepository repository;
     private final IBoPhanService boPhanService;
@@ -82,5 +85,17 @@ public class NhanVienImplement implements INhanVienService {
         }
 
         repository.deleteById(id);
+    }
+
+    @Override
+    public NhanVien getNhanVienByToken() throws Exception {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String tenDangNhap = authentication.getName();
+
+        Optional<NhanVien> nhanVienOptional = repository.findByTaiKhoan_TenDangNhap(tenDangNhap);
+        if(nhanVienOptional.isEmpty()){
+            throw new Exception("NhanVien not found.");
+        }
+        return nhanVienOptional.get();
     }
 }

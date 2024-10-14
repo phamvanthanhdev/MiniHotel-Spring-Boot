@@ -1,9 +1,11 @@
 package com.demo.MiniHotel.modules.chitiet_phieuthue.controller;
 
-import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.dto.ApiResponse;
+import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
@@ -11,7 +13,6 @@ import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuResponse;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
-import com.demo.MiniHotel.modules.hoadon.dto.HoaDonRequest;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
@@ -39,17 +40,20 @@ public class ChiTietPhieuThueController {
     }
 
     //Khi muốn thuê thêm vài ngày
-    @PutMapping("/ngay-di/{id}")
-    public ResponseEntity<ChiTietPhieuThueResponse> capNhatNgayDi(@PathVariable("id") Integer id,
-                                                        @RequestParam("ngayDi") LocalDate ngayDi) throws Exception {
-        ChiTietPhieuThueResponse response = chiTietPhieuThueService.updateNgayDi(id, ngayDi);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    @PutMapping("/ngay-di/{id}")
+//    public ResponseEntity<ChiTietPhieuThueResponse> capNhatNgayDi(@PathVariable("id") Integer id,
+//                                                        @RequestParam("ngayDi") LocalDate ngayDi) throws Exception {
+//        ChiTietPhieuThueResponse response = chiTietPhieuThueService.updateNgayDi(id, ngayDi);
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteChiTietPhieuThueById(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteChiTietPhieuThueById(@PathVariable("id") Integer id) throws Exception {
         chiTietPhieuThueService.deleteChiTietPhieuThue(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .message("Xóa chi tiết phiếu thuê thành công")
+                .build(), HttpStatus.OK);
     }
 
     // Lấy danh sách chi tiết thuê phòng của một phiếu thuê phòng
@@ -136,11 +140,8 @@ public class ChiTietPhieuThueController {
 
     //Hoàn thành trả phòng khach doan
     @PostMapping("/tra-phong/khach-doan")
-    public ResponseEntity<HoaDonResponse> traPhongKhachSanKhachDoan(@RequestParam("idNhanVien") Integer idNhanVien,
-                                                           @RequestParam("tongTien") Long tongTien,
-                                                           @RequestParam("ngayTao") LocalDate ngayTao,
-                                                           @RequestParam("idChiTietPhieuThues") List<Integer> idChiTietPhieuThues) throws Exception {
-        HoaDonResponse hoaDonResponse = chiTietPhieuThueService.traPhongKhachSanKhachDoan(idNhanVien, tongTien, ngayTao, idChiTietPhieuThues);
+    public ResponseEntity<HoaDonResponse> traPhongKhachSanKhachDoan(@RequestBody TraPhongRequest request) throws Exception {
+        HoaDonResponse hoaDonResponse = chiTietPhieuThueService.traPhongKhachSanKhachDoan(request);
         return new ResponseEntity<>(hoaDonResponse, HttpStatus.OK);
     }
 
@@ -168,43 +169,25 @@ public class ChiTietPhieuThueController {
         }
     }
 
-    //
-    /*@PutMapping("/dich-vu/{idChiTietSuDungDichVu}")
-    public ResponseEntity<ChiTietSuDungDichVu> updateSoLuongChiTietSuDungDichVu(@PathVariable("idChiTietSuDungDichVu") Integer idChiTietSuDungDichVu,
-                                                                                @RequestBody ChiTietPhuThuRequest chiTietSuDungDichVuRequest) throws Exception {
-        ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuService.updateChiTietDichVu(chiTietSuDungDichVuRequest, idChiTietSuDungDichVu);
-        return new ResponseEntity<>(chiTietSuDungDichVu, HttpStatus.OK);
+    // Thêm chi tiết phiếu thuê vào phiếu thuê
+    @PostMapping("/them")
+    public ResponseEntity<ApiResponse> themChiTietPhieuThue(@RequestBody ChiTietPhieuThueRequest request) throws Exception {
+        ChiTietPhieuThue response = chiTietPhieuThueService.themChiTietPhieuThue(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 
-    @DeleteMapping("/dich-vu/{idChiTietSuDungDichVu}")
-    public ResponseEntity<String> deleteChiTietSuDungDichVu(@PathVariable("idChiTietSuDungDichVu") Integer idChiTietSuDungDichVu) throws Exception {
-        chiTietSuDungDichVuService.deleteChiTietSuDungDichVu(idChiTietSuDungDichVu);
-        return new ResponseEntity<>("Deleted No." + idChiTietSuDungDichVu + " successfully.", HttpStatus.OK);
+    // Thay đổi thời gian trả phòng
+    @PutMapping("/thay-doi-ngay-tra/{id}")
+    public ResponseEntity<ApiResponse> thayDoiNgayTraPhong(@PathVariable("id") Integer id,
+                                                                        @RequestParam("ngayTraPhong") LocalDate ngayTraPhong)
+            throws Exception {
+        ChiTietPhieuThueResponse response = chiTietPhieuThueService.thayDoiNgayTraPhong(id, ngayTraPhong);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
-
-    //Lấy hóa đơn của một chi tiết phiếu thuê
-    @GetMapping("/hoa-don/{id}")
-    public ResponseEntity<HoaDon> getHoaDonByIdChiTietPhieuThue(@PathVariable("id") Integer id) throws Exception {
-        HoaDon hoaDon = chiTietPhieuThueService.getHoaDonByChiTietPhieuThue(id);
-        return new ResponseEntity<>(hoaDon, HttpStatus.OK);
-    }
-
-    @PutMapping("/hoa-don/{id}")
-    public ResponseEntity<ChiTietPhieuThue> addHoaDonToChiTietPhieuThue(@PathVariable("id") Integer id, @RequestBody ChiTietPhieuThueRequest request) throws Exception {
-        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.addHoaDonToChiTietPhieuThue(id, request);
-        return new ResponseEntity<>(chiTietPhieuThue, HttpStatus.OK);
-    }
-
-    //Lấy hóa đơn của một chi tiết sử dụng dịch vụ
-    @GetMapping("/dich-vu/hoa-don/{idChiTietSuDungDichVu}")
-    public ResponseEntity<HoaDon> getHoaDonByIdChiTietSuDungDichVu(@PathVariable("idChiTietSuDungDichVu") Integer id) throws Exception {
-        HoaDon hoaDon = chiTietSuDungDichVuService.getHoaDonInChiTietSuDungDichVu(id);
-        return new ResponseEntity<>(hoaDon, HttpStatus.OK);
-    }
-
-    @PutMapping("/dich-vu/hoa-don/{idChiTietSuDungDichVu}")
-    public ResponseEntity<ChiTietSuDungDichVu> addHoaDonToChiTietSuDung(@PathVariable("idChiTietSuDungDichVu") Integer id, @RequestParam("soHoaDon") String soHoaDon) throws Exception {
-        ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuService.addHoaDonToChiTietSuDungDichVu(id, soHoaDon);
-        return new ResponseEntity<>(chiTietSuDungDichVu, HttpStatus.OK);
-    }*/
 }

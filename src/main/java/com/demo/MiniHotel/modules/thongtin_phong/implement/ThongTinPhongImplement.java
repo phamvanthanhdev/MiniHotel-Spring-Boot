@@ -1,13 +1,12 @@
 package com.demo.MiniHotel.modules.thongtin_phong.implement;
 
-import com.demo.MiniHotel.model.DoanhThuTheoNgay;
-import com.demo.MiniHotel.model.Phong;
-import com.demo.MiniHotel.model.ThongTinPhong;
-import com.demo.MiniHotel.model.ThongTinPhongHienTai;
+import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.PhongTrongResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongHienTaiResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.service.IThongTinPhongService;
+import com.demo.MiniHotel.repository.ChiTietPhieuThueRepository;
 import com.demo.MiniHotel.repository.ThongTinPhongHienTaiRepository;
 import com.demo.MiniHotel.repository.ThongTinPhongRepository;
 import jakarta.persistence.EntityManager;
@@ -20,12 +19,14 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ThongTinPhongImplement implements IThongTinPhongService {
     private final ThongTinPhongRepository repository;
     private final ThongTinPhongHienTaiRepository phongHienTaiRepository;
+    private final ChiTietPhieuThueRepository chiTietPhieuThueRepository;
     @Autowired
     private EntityManager entityManager;
     @Override
@@ -55,6 +56,8 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
                 .setParameter("ngay_di_thue", ngayDiThue)
                 .setParameter("ma_phong_thue", maPhongThue);
         query.execute();
+        // Đã thuê: true
+        // Chưa thuê: false
 
         return (Boolean) query.getOutputParameterValue("ket_qua_thue");
     }
@@ -63,8 +66,7 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
     public List<ThongTinPhongHienTaiResponse> getThongTinPhongHienTai() {
         List<ThongTinPhongHienTai> phongHienTais = phongHienTaiRepository.findAll();
         List<ThongTinPhongHienTaiResponse> responses = new ArrayList<>();
-        for (ThongTinPhongHienTai phongHienTai: phongHienTais
-             ) {
+        for (ThongTinPhongHienTai phongHienTai: phongHienTais) {
             responses.add(convertThongTinPhongHienTaiResponse(phongHienTai));
         }
         return responses;
@@ -78,6 +80,19 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
             boolean ketQuaThue = kiemTraPhongThue(ngayDenThue, ngayDiThue, phong.getMaPhong());
             if(!ketQuaThue)
                 responses.add(convertPhongTrongResponse(phong));
+        }
+        return responses;
+    }
+
+    @Override
+    public List<ThongTinPhongResponse> getThongTinPhongTheoHangPhong(LocalDate ngayDenThue, LocalDate ngayDiThue, int idHangPhong) {
+        List<ThongTinPhong> thongTinPhongs = getAllThongTinPhong();
+        List<ThongTinPhongResponse> responses = new ArrayList<>();
+        for (ThongTinPhong phong: thongTinPhongs) {
+            if(phong.getIdHangPhong() == idHangPhong) {
+                boolean ketQuaThue = kiemTraPhongThue(ngayDenThue, ngayDiThue, phong.getMaPhong());
+                responses.add(convertThongTinPhongResponse(phong, ketQuaThue));
+            }
         }
         return responses;
     }
@@ -98,10 +113,19 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
     }
 
     private ThongTinPhongHienTaiResponse convertThongTinPhongHienTaiResponse(ThongTinPhongHienTai phongHienTai) {
+        ChiTietPhieuThue chiTietPhieuThue = null;
+        if(phongHienTai.getIdchitiet_phieuthue() != null) {
+            Optional<ChiTietPhieuThue> chiTietPhieuThueOptional = chiTietPhieuThueRepository.findById(phongHienTai.getIdchitiet_phieuthue());
+            if (chiTietPhieuThueOptional.isEmpty())
+                throw new RuntimeException("ChiTietPhieuThue not found");
+            chiTietPhieuThue = chiTietPhieuThueOptional.get();
+        }
+
         return new ThongTinPhongHienTaiResponse(phongHienTai.getMaPhong(),
                 phongHienTai.getTang(), phongHienTai.getIdHangPhong(), phongHienTai.getTenHangPhong(),
                 phongHienTai.getSoNguoiToiDa(), phongHienTai.getGiaGoc(), phongHienTai.getGiaKhuyenMai(),
                 phongHienTai.getTenTrangThai(), phongHienTai.getDaThue(),phongHienTai.getIdchitiet_phieuthue(),
+                chiTietPhieuThue != null ? chiTietPhieuThue.getPhieuThuePhong().getIdPhieuThue() : null,
                 phongHienTai.getNgayDen(), phongHienTai.getNgayDi());
     }
 }

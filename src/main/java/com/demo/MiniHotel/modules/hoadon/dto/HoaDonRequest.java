@@ -11,5 +11,5 @@ public class HoaDonRequest {
     private Integer idNhanVien;
     private Integer idPhieuThue;
     private Long tongTien;
-    private LocalDate ngayTao;
+//    private LocalDate ngayTao;
 }

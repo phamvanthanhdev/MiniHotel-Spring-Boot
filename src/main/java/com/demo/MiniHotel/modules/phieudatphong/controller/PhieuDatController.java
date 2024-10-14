@@ -1,16 +1,16 @@
 package com.demo.MiniHotel.modules.phieudatphong.controller;
 
-import com.demo.MiniHotel.model.ChiTietPhieuDat;
-import com.demo.MiniHotel.model.HoaDon;
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.PhieuDatPhong;
+import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatRequest;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse2;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatRequest;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatResponse;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatThoiGianResponse;
-import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
+import com.demo.MiniHotel.modules.chitiet_phieudat.service.IChiTietPhieuDatService;
+import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
+import com.demo.MiniHotel.modules.phieudatphong.dto.*;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
 import com.demo.MiniHotel.modules.phieudatphong.service.IPhieuDatService;
+import com.demo.MiniHotel.vnpay.PhieuDatThanhToanRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +22,31 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/phieu-dat")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class PhieuDatController {
     private final IPhieuDatService PhieuDatPhongService;
-    @PostMapping("/")
+    private final IChiTietPhieuDatService chiTietPhieuDatService;
+    /*@PostMapping("/")
     public ResponseEntity<ResultResponse> datPhongKhachSan(@RequestBody PhieuDatRequest request){
         ResultResponse response;
         try {
             PhieuDatPhongService.addNewPhieuDatPhong(request);
+        }catch (SoLuongPhongTrongException ex){
+            response = new ResultResponse(400, ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        response = new ResultResponse(200, "Đặt phòng thành công");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }*/
+
+    @PostMapping("/dat-phong")
+    public ResponseEntity<ResultResponse> datPhongKhachSan(@RequestBody PhieuDatThanhToanRequest request){
+        ResultResponse response;
+        try {
+            PhieuDatPhongService.datPhongKhachSan(request);
         }catch (SoLuongPhongTrongException ex){
             response = new ResultResponse(400, ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -59,16 +77,29 @@ public class PhieuDatController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @GetMapping("/khach-hang/{idKhachHang}")
-    public ResponseEntity<List<PhieuDatResponse>> getPhieuDatByIdKhachHang(
-                                                        @PathVariable("idKhachHang") Integer idKhachHang) throws Exception {
-        List<PhieuDatResponse> phieuDatResponses = PhieuDatPhongService.getPhieuDatPhongByIdKhachHang(idKhachHang);
+//    @GetMapping("/khach-hang/{idKhachHang}")
+//    public ResponseEntity<List<PhieuDatResponse>> getPhieuDatByIdKhachHang(
+//                                                        @PathVariable("idKhachHang") Integer idKhachHang) throws Exception {
+//        List<PhieuDatResponse> phieuDatResponses = PhieuDatPhongService.getPhieuDatPhongByIdKhachHang(idKhachHang);
+//        return new ResponseEntity<>(phieuDatResponses, HttpStatus.OK);
+//    }
+
+    @GetMapping("/khach-hang")
+    public ResponseEntity<List<PhieuDatUserResponse>> getPhieuDatByIdKhachHang(
+            /*@PathVariable("idKhachHang") Integer idKhachHang*/) throws Exception {
+        List<PhieuDatUserResponse> phieuDatResponses = PhieuDatPhongService.getPhieuDatUserByIdKhachHang();
         return new ResponseEntity<>(phieuDatResponses, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PhieuDatResponse> getPhieuDatPhongById(@PathVariable("id") Integer id) throws Exception {
         PhieuDatResponse response = PhieuDatPhongService.getPhieuDatResponseById(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<PhieuDatDetailsResponse> getPhieuDatDetailsById(@PathVariable("id") Integer id) throws Exception {
+        PhieuDatDetailsResponse response = PhieuDatPhongService.getPhieuDatDetailsById(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -97,10 +128,59 @@ public class PhieuDatController {
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
 
-    @GetMapping("/khach-hang")
-    public ResponseEntity<List<PhieuDatResponse>> getPhieuDatPhongTheoCMND(@RequestParam("cmnd") String cmnd) throws Exception {
-        List<PhieuDatResponse> responses = PhieuDatPhongService.getPhieuDatTheoCMND(cmnd);
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+//    @GetMapping("/khach-hang")
+//    public ResponseEntity<List<PhieuDatResponse>> getPhieuDatPhongTheoCMND(@RequestParam("cmnd") String cmnd) throws Exception {
+//        List<PhieuDatResponse> responses = PhieuDatPhongService.getPhieuDatTheoCMND(cmnd);
+//        return new ResponseEntity<>(responses, HttpStatus.OK);
+//    }
+
+    @PutMapping("/huy-dat")
+    public ResponseEntity<ResultResponse> huyDatPhong(@RequestParam("id") int id){
+        try {
+            PhieuDatPhongService.huyDatPhong(id);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResultResponse(400, e.getMessage()),HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new ResultResponse(200, "Successfully"),HttpStatus.OK);
+    }
+
+    //Cập nhật thông tin ds khách hàng từ file excel
+    @PostMapping("/khach-hang/cap-nhat")
+    public ResponseEntity<ResultResponse> capNhatThongTinKhachHang(@RequestBody CapNhatKhachHangResquest request){
+        try {
+            PhieuDatPhongService.capNhatDanhSachKhachHang(request);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResultResponse(400, e.getMessage()),HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new ResultResponse(200, "Successfully"),HttpStatus.OK);
+    }
+
+    @GetMapping("/tim-kiem/cccd")
+    public ResponseEntity<List<PhieuDatUserResponse>> timKiemPhieuDatTheoCMND(@RequestParam("cccd") String cccd)
+            throws Exception {
+        List<PhieuDatUserResponse> responses = PhieuDatPhongService.getPhieuDatByCccd(cccd);
+        return new ResponseEntity<>(responses,HttpStatus.OK);
+    }
+
+    // Bo sung danh sách chi tiết phiếu đặt
+    @PostMapping("/chi-tiet/bo-sung")
+    public ResponseEntity<ApiResponse> boSungChiTietPhieuDat(@RequestBody List<ChiTietPhieuDatRequest> chiTietPhieuDatRequests)
+            throws Exception {
+        PhieuDatPhongService.boSungChiTietPhieuDat(chiTietPhieuDatRequests);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .message("Thêm chi tiết phiếu đặt thành công")
+                .build(), HttpStatus.OK);
+    }
+
+    // Xóa chi tiết phiếu đặt
+    @PostMapping("/chi-tiet/xoa")
+    public ResponseEntity<ApiResponse> xoaChiTietPhieuDat(@RequestBody ChiTietPhieuDatRequest chiTietPhieuDatRequest) {
+        chiTietPhieuDatService.xoaChiTietPhieuDat(chiTietPhieuDatRequest);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .message("Thay đổi chi tiết phiếu đặt thành công")
+                .build(), HttpStatus.OK);
     }
 
     //Nhan vien xac nhan don dat phong

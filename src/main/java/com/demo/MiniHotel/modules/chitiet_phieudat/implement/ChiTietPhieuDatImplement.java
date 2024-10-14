@@ -1,12 +1,15 @@
 package com.demo.MiniHotel.modules.chitiet_phieudat.implement;
 
 import com.demo.MiniHotel.embedded.IdChiTietPhieuDatEmb;
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.ChiTietPhieuDat;
 import com.demo.MiniHotel.model.HangPhong;
 import com.demo.MiniHotel.model.PhieuDatPhong;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatRequest;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse2;
+import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietUserResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.exception.LoginWrongException;
 import com.demo.MiniHotel.modules.chitiet_phieudat.service.IChiTietPhieuDatService;
 import com.demo.MiniHotel.modules.hangphong.service.IHangPhongService;
@@ -35,7 +38,6 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
         chiTietPhieuDat.setPhieuDatPhong(phieuDatPhong);
         chiTietPhieuDat.setHangPhong(hangPhong);
         chiTietPhieuDat.setDonGia(request.getDonGia());
-
         chiTietPhieuDat.setSoLuong(request.getSoLuong());
 
 
@@ -68,6 +70,7 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
         return response;
     }
 
+
     @Override
     public ChiTietPhieuDatResponse convertChiTietPhieuDatResponse(ChiTietPhieuDat chiTietPhieuDat) throws Exception {
         ChiTietPhieuDatResponse response = new ChiTietPhieuDatResponse();
@@ -87,6 +90,18 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
         response.setSoLuongTrong(soLuongTrong);
         response.setDonGia(chiTietPhieuDat.getDonGia());
         response.setIdHangPhong(chiTietPhieuDat.getHangPhong().getIdHangPhong());
+        return response;
+    }
+
+    @Override
+    public ChiTietUserResponse convertChiTietUserResponse(ChiTietPhieuDat chiTietPhieuDat) throws Exception {
+        ChiTietUserResponse response = new ChiTietUserResponse();
+        response.setIdHangPhong(chiTietPhieuDat.getIdChiTietPhieuDatEmb().getIdHangPhong());
+        response.setTenHangPhong(chiTietPhieuDat.getHangPhong().getTenHangPhong());
+        response.setSoLuong(chiTietPhieuDat.getSoLuong());
+        response.setHinhAnh(hangPhongService.getHinhAnhByIdHangPhong(
+                chiTietPhieuDat.getIdChiTietPhieuDatEmb().getIdHangPhong()));
+        response.setDonGia(chiTietPhieuDat.getDonGia());
         return response;
     }
 
@@ -123,6 +138,26 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
         }
         for (ChiTietPhieuDat chiTietPhieuDat:chiTietPhieuDats) {
             repository.deleteById(chiTietPhieuDat.getIdChiTietPhieuDatEmb());
+        }
+    }
+
+    @Override
+    public void xoaChiTietPhieuDat(ChiTietPhieuDatRequest chiTietPhieuDatRequest) {
+        IdChiTietPhieuDatEmb idChiTietPhieuDatEmb = new IdChiTietPhieuDatEmb();
+        idChiTietPhieuDatEmb.setIdPhieuDat(chiTietPhieuDatRequest.getIdPhieuDat());
+        idChiTietPhieuDatEmb.setIdHangPhong(chiTietPhieuDatRequest.getIdHangPhong());
+
+        Optional<ChiTietPhieuDat> chiTietPhieuDatOptional = repository.findById(idChiTietPhieuDatEmb);
+        if(chiTietPhieuDatOptional.isEmpty())
+            throw new AppException(ErrorCode.CTPHIEUDAT_NOT_FOUND);
+
+        ChiTietPhieuDat chiTietPhieuDat = chiTietPhieuDatOptional.get();
+        int soLuongConLai = chiTietPhieuDat.getSoLuong() - chiTietPhieuDatRequest.getSoLuong();
+        if(soLuongConLai <= 0) {
+            repository.delete(chiTietPhieuDatOptional.get());
+        } else {
+            chiTietPhieuDat.setSoLuong(soLuongConLai);
+            repository.save(chiTietPhieuDat);
         }
     }
 }

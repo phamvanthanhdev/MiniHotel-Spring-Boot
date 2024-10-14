@@ -17,12 +17,13 @@ public class PhieuDatResponse {
     private Long tienTamUng;
     private Integer idKhachHang;
     private Integer idNhanVien;
-    private Boolean trangThaiHuy;
+    private Integer trangThaiHuy;
     //private List<ChiTietPhieuDatResponse> chiTietResponses;
 
 
     public PhieuDatResponse(Integer idPhieuDat, LocalDate ngayBatDau,
-                            LocalDate ngayTraPhong, String ghiChu, LocalDate ngayTao, Long tienTamUng, Integer idKhachHang, Integer idNhanVien, Boolean trangThaiHuy) {
+                            LocalDate ngayTraPhong, String ghiChu, LocalDate ngayTao, Long tienTamUng,
+                            Integer idKhachHang, Integer idNhanVien, Integer trangThaiHuy) {
         this.idPhieuDat = idPhieuDat;
         this.ngayBatDau = ngayBatDau;
         this.ngayTraPhong = ngayTraPhong;

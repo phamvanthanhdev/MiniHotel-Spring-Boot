@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -182,7 +180,25 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
             int soLuongTrong = laySoLuongHangPhongTrong(ngayDenDat, ngayDiDat, thongTinHangPhong.getIdHangPhong());
             responses.add(convertThongTinHangPhongUserResponse(thongTinHangPhong, soLuongTrong));
         }
-        return responses;
+        return responses.subList(0, Math.min(4, responses.size()));
+    }
+
+    @Override
+    public List<ThongTinHangPhongUserResponse> sapXepHangPhongTheoGiamGia(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception {
+        List<ThongTinHangPhong> thongTinHangPhongs = repository.findAll();
+        Collections.sort(thongTinHangPhongs, new Comparator<ThongTinHangPhong>() {
+            @Override
+            public int compare(ThongTinHangPhong p1, ThongTinHangPhong p2) {
+                return Float.compare(p2.getPhanTramGiam(), p1.getPhanTramGiam());
+            }
+        });
+
+        List<ThongTinHangPhongUserResponse> responses = new ArrayList<>();
+        for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
+            int soLuongTrong = laySoLuongHangPhongTrong(ngayDenDat, ngayDiDat, thongTinHangPhong.getIdHangPhong());
+            responses.add(convertThongTinHangPhongUserResponse(thongTinHangPhong, soLuongTrong));
+        }
+        return responses.subList(0, Math.min(4, responses.size()));
     }
 
     @Override
@@ -198,11 +214,41 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
 
     @Override
     public List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongTheoGia(LocalDate ngayDenDat, LocalDate ngayDiDat, Long giaMin, Long giaMax) throws Exception {
+        if(giaMax == 0){
+            giaMax = 1000000000L;
+        }
+
         List<ThongTinHangPhongUserResponse> thongTinHangPhongUserResponses = getThongTinHangPhongTheoThoiGian(ngayDenDat, ngayDiDat);
         List<ThongTinHangPhongUserResponse> thongTinHangPhongTimKiem = new ArrayList<>();
         for (ThongTinHangPhongUserResponse thongTinHangPhong: thongTinHangPhongUserResponses) {
             if(thongTinHangPhong.getGiaGoc() >= giaMin && thongTinHangPhong.getGiaGoc() <= giaMax )
                 thongTinHangPhongTimKiem.add(thongTinHangPhong);
+        }
+        return thongTinHangPhongTimKiem;
+    }
+
+    @Override
+    public List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongUser(LocalDate ngayDenDat, LocalDate ngayDiDat,
+                                                                            Long giaMin, Long giaMax, String noiDung)
+            throws Exception {
+        if(giaMax == 0){
+            giaMax = 1000000000L;
+        }
+
+        List<ThongTinHangPhongUserResponse> thongTinHangPhongUserResponses = getThongTinHangPhongTheoThoiGian(ngayDenDat, ngayDiDat);
+        List<ThongTinHangPhongUserResponse> thongTinHangPhongTimKiem = new ArrayList<>();
+        for (ThongTinHangPhongUserResponse thongTinHangPhong: thongTinHangPhongUserResponses) {
+            if(thongTinHangPhong.getGiaGoc() >= giaMin && thongTinHangPhong.getGiaGoc() <= giaMax ) {
+                if (noiDung != null && !noiDung.trim().equals("")) {
+                    if(thongTinHangPhong.getTenKieuPhong().contains(noiDung)
+                        || thongTinHangPhong.getTenLoaiPhong().contains(noiDung)
+                        || thongTinHangPhong.getTenHangPhong().contains(noiDung)){
+                        thongTinHangPhongTimKiem.add(thongTinHangPhong);
+                    }
+                } else {
+                    thongTinHangPhongTimKiem.add(thongTinHangPhong);
+                }
+            }
         }
         return thongTinHangPhongTimKiem;
     }

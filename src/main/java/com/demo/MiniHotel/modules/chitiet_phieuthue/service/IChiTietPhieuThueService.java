@@ -8,6 +8,7 @@ import com.demo.MiniHotel.model.PhieuThuePhong;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
@@ -38,8 +39,10 @@ public interface IChiTietPhieuThueService {
 
     List<ChiTietPhieuThueResponse> getChiTietPhieuThueResponseByIdPhieuThue(int idPhieuThue) throws Exception;
 
-    HoaDonResponse traPhongKhachSanKhachDoan(Integer idNhanVien, Long tongTien, LocalDate ngayTao, List<Integer> idChiTietPhieuThues) throws Exception;
+    HoaDonResponse traPhongKhachSanKhachDoan(TraPhongRequest request) throws Exception;
 
     boolean doiPhong(int idChiTietPhieuThue, String maPhong) throws Exception;
-
+    ChiTietPhieuThue themChiTietPhieuThue(ChiTietPhieuThueRequest request) throws Exception;
+    ChiTietPhieuThueResponse thayDoiNgayTraPhong(Integer id, LocalDate ngayTraPhong) throws Exception;
+    ChiTietPhieuThue themHoaDonToChiTietPhieuThue(Integer id, String soHoaDon) throws Exception;
 }

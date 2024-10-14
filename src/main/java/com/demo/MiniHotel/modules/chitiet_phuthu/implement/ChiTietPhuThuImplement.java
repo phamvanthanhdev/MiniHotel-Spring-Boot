@@ -13,6 +13,7 @@ import com.demo.MiniHotel.repository.PhuThuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +36,8 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
             ChiTietPhuThu chiTietPhuThuNew = new ChiTietPhuThu();
             chiTietPhuThuNew.setIdChiTietPhuThuEmb(idChiTietPhuThuEmb);
             chiTietPhuThuNew.setDonGia(request.getDonGia());
-            chiTietPhuThuNew.setNgayTao(request.getNgayTao());
-            chiTietPhuThuNew.setDaThanhToan(false);
+            chiTietPhuThuNew.setNgayTao(LocalDate.now());
+            chiTietPhuThuNew.setDaThanhToan(request.getDaThanhToan());
 
             Optional<PhuThu> phuThuOptional = phuThuRepository.findById(request.getIdPhuThu());
             if (phuThuOptional.isEmpty()) {
@@ -55,6 +56,8 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
             repository.save(chiTietPhuThuNew);
         }else{
             ChiTietPhuThu chiTietPhuThu = chiTietPhuThuOptional.get();
+            chiTietPhuThu.setDaThanhToan(request.getDaThanhToan());
+            chiTietPhuThu.setDonGia(request.getDonGia());
             if(chiTietPhuThu.getSoLuong() + request.getSoLuong() <= 0){
                 deleteChiTietPhuThu(chiTietPhuThu.getIdChiTietPhuThuEmb());
             }else {
@@ -157,9 +160,11 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
     public List<ChiTietPhuThu> thanhToanChiTietPhuThuCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception {
         List<ChiTietPhuThu> chiTietPhuThus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
         for (ChiTietPhuThu chiTietPhuThu:chiTietPhuThus) {
-            addHoaDonToChiTietPhuThu(idChiTietPhieuThue,
-                    chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
-                    soHoaDon);
+            if(!chiTietPhuThu.getDaThanhToan()) {
+                addHoaDonToChiTietPhuThu(idChiTietPhieuThue,
+                        chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
+                        soHoaDon);
+            }
         }
         return chiTietPhuThus;
     }

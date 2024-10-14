@@ -18,5 +18,6 @@ public class ChiTietPhieuThueResponse {
     private LocalDate ngayDen;
     private LocalDate ngayDi;
     private Long donGia;
+    private Long tongTien;
     private Boolean daThanhToan;
 }

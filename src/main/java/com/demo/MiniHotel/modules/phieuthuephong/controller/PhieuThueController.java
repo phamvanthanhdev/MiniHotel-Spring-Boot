@@ -1,13 +1,13 @@
 package com.demo.MiniHotel.modules.phieuthuephong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.model.PhieuThuePhong;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
-import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
-import com.demo.MiniHotel.modules.phieuthuephong.dto.DelChiTietKhachThueRequest;
-import com.demo.MiniHotel.modules.phieuthuephong.dto.PhieuThuePhongRequest;
-import com.demo.MiniHotel.modules.phieuthuephong.dto.PhieuThueResponse;
+import com.demo.MiniHotel.modules.phieuthuephong.dto.*;
 import com.demo.MiniHotel.modules.phieuthuephong.service.IPhieuThueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,19 +23,25 @@ import java.util.List;
 public class PhieuThueController {
     private final IPhieuThueService PhieuThuePhongService;
     @PostMapping("/")
-    public ResponseEntity<ResultResponse> thuePhongKhachSan(@RequestBody PhieuThuePhongRequest request) throws Exception {
-        ResultResponse response;
-        try {
-            PhieuThuePhongService.addNewPhieuThuePhong(request);
-        }catch (SoLuongPhongTrongException ex){
-            response = new ResultResponse(400, ex.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        response = new ResultResponse(200, "Thuê phòng thành công");
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse> thuePhongKhachSan(@RequestBody PhieuThuePhongRequest request) throws Exception {
+//        PhieuThueResponse response;
+//        try {
+//            response = PhieuThuePhongService.addNewPhieuThuePhong(request);
+//        }catch (SoLuongPhongTrongException ex){
+//            return new ResponseEntity<>(ApiResponse.builder()
+//                    .code(200)
+//                    .message("Số lượng phòng không hợp lệ")
+//                    .build(), HttpStatus.BAD_REQUEST);
+//        }
+//        catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+
+        PhieuThueResponse response = PhieuThuePhongService.addNewPhieuThuePhong(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
@@ -98,18 +104,23 @@ public class PhieuThueController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    //(Khách đoàn) Lấy thông tin phiếu thuê và chi tiết phiếu thuê được chọn để trả phòng
+    @PostMapping("/thong-tin-tra-phong")
+    public ResponseEntity<ApiResponse> getThongTinTraPhong(@RequestBody ThongTinTraPhongRequest request) throws Exception {
+        ThongTinTraPhongResponse response = PhieuThuePhongService.getThongTinTraPhong(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
 
-    //Thêm khách hàng vào chi tiết phiếu thuê
-    /*@PostMapping("/khach-thue")
-    public ResponseEntity<ChiTietPhieuThue> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request) throws Exception {
-        ChiTietPhieuThue chiTietPhieuThue = PhieuThuePhongService.addKhachHangToChiTietPhieuThue(request);
-        return new ResponseEntity<>(chiTietPhieuThue, HttpStatus.OK);
-    }*/
-
-    //Xóa khách hàng khỏi chi tiết phiếu thuê
-    /*@PostMapping("/del-khach-thue")
-    public ResponseEntity<ChiTietPhieuThue> removeKhachHangToChiTietPhieuThue(@RequestBody DelChiTietKhachThueRequest request) throws Exception {
-        ChiTietPhieuThue chiTietPhieuThue = PhieuThuePhongService.removeKhachHangInChiTietPhieuThue(request);
-        return new ResponseEntity<>(chiTietPhieuThue, HttpStatus.OK);
-    }*/
+    // (Khách đoàn) Trả phòng
+    @PostMapping("/tra-phong")
+    public ResponseEntity<ApiResponse> traPhong(@RequestBody TraPhongRequest request) throws Exception {
+        TraPhongResponse response = PhieuThuePhongService.traPhong(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
 }

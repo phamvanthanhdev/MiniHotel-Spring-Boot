@@ -42,4 +42,12 @@ public class ThongTinPhongController {
         List<PhongTrongResponse> responses = thongTinPhongService.getPhongTrongByIdHangPhong(idHangPhong, ngayDenThue, ngayDiThue);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
+
+    @GetMapping("/hang-phong")
+    public ResponseEntity<List<ThongTinPhongResponse>> getThongTinPhongsTheoThoiGian(@RequestParam("ngayDenThue") LocalDate ngayDenThue,
+                                                                                     @RequestParam("ngayDiThue") LocalDate ngayDiThue,
+                                                                                     @RequestParam("idHangPhong") int idHangPhong){
+        List<ThongTinPhongResponse> responses = thongTinPhongService.getThongTinPhongTheoHangPhong(ngayDenThue, ngayDiThue, idHangPhong);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
 }

@@ -1,42 +1,56 @@
 package com.demo.MiniHotel.modules.phieudatphong.implement;
 
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatRequest;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse2;
+import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietUserResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.service.IChiTietPhieuDatService;
-import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
+import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
+import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
-import com.demo.MiniHotel.modules.phieudatphong.dto.ChiTietRequest;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatRequest;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatResponse;
-import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatThoiGianResponse;
+import com.demo.MiniHotel.modules.phieudatphong.dto.*;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
 import com.demo.MiniHotel.modules.phieudatphong.service.IPhieuDatService;
-import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
 import com.demo.MiniHotel.repository.PhieuDatPhongRepository;
 import com.demo.MiniHotel.modules.nhanvien.service.INhanVienService;
+import com.demo.MiniHotel.repository.TaiKhoanRepository;
+import com.demo.MiniHotel.vnpay.PhieuDatThanhToanRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PhieuDatImplement implements IPhieuDatService {
     private final PhieuDatPhongRepository repository;
     private final IKhachHangService khachHangService;
     private final INhanVienService nhanVienService;
     private final IChiTietPhieuDatService chiTietPhieuDatService;
     private final IThongTinHangPhongService thongTinHangPhongService;
+    private final TaiKhoanRepository taiKhoanRepository;
+
+    @Override
+    public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception {
+        KhachHangResponse khachHangResponse = khachHangService.addKhachHangDatPhong(request.getKhachHang());
+        request.getPhieuDat().setIdKhachHang(khachHangResponse.getIdKhachHang());
+
+        return addNewPhieuDatPhong(request.getPhieuDat());
+    }
     @Override
     public PhieuDatPhong addNewPhieuDatPhong(PhieuDatRequest request) throws Exception {
         PhieuDatPhong phieuDatPhong = new PhieuDatPhong();
@@ -44,8 +58,8 @@ public class PhieuDatImplement implements IPhieuDatService {
         phieuDatPhong.setNgayTraPhong(request.getNgayTraPhong());
         phieuDatPhong.setGhiChu(request.getGhiChu());
         phieuDatPhong.setNgayTao(request.getNgayTao());
-        phieuDatPhong.setTienTamUng(request.getTienTamUng());
-        phieuDatPhong.setTrangThaiHuy(false);
+        phieuDatPhong.setTienTamUng(0L);
+        phieuDatPhong.setTrangThaiHuy(0);
 
         KhachHang khachHang = khachHangService.getKhachHangById(request.getIdKhachHang());
         phieuDatPhong.setKhachHang(khachHang);
@@ -61,17 +75,27 @@ public class PhieuDatImplement implements IPhieuDatService {
         PhieuDatPhong newPhieuDat = repository.save(phieuDatPhong);
         //Luu chi tiet phieu dat
         for (ChiTietRequest chiTietRequest: request.getChiTietRequests()) {
-            ChiTietPhieuDatRequest chiTietPhieuDatRequest = new ChiTietPhieuDatRequest();
-            chiTietPhieuDatRequest.setIdPhieuDat(newPhieuDat.getIdPhieuDat());
-            chiTietPhieuDatRequest.setIdHangPhong(chiTietRequest.getIdHangPhong());
-            chiTietPhieuDatRequest.setSoLuong(chiTietRequest.getSoLuong());
-            Long donGia = thongTinHangPhongService.getDonGiaThongTinHangPhongById(chiTietRequest.getIdHangPhong());
-            chiTietPhieuDatRequest.setDonGia(donGia);
+            if(chiTietRequest.getSoLuong() > 0) {
+                ChiTietPhieuDatRequest chiTietPhieuDatRequest = new ChiTietPhieuDatRequest();
+                chiTietPhieuDatRequest.setIdPhieuDat(newPhieuDat.getIdPhieuDat());
+                chiTietPhieuDatRequest.setIdHangPhong(chiTietRequest.getIdHangPhong());
+                chiTietPhieuDatRequest.setSoLuong(chiTietRequest.getSoLuong());
+                Long donGia = thongTinHangPhongService.getDonGiaThongTinHangPhongById(chiTietRequest.getIdHangPhong());
+                chiTietPhieuDatRequest.setDonGia(donGia);
 
-            chiTietPhieuDatService.addNewChiTietPhieuDat(chiTietPhieuDatRequest);
+                chiTietPhieuDatService.addNewChiTietPhieuDat(chiTietPhieuDatRequest);
+            }
         }
 
         return newPhieuDat;
+    }
+
+    @Override
+    public PhieuDatPhong thanhToanPhieuDat(Integer id, Long tienTamUng) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(id);
+        phieuDatPhong.setTienTamUng(tienTamUng);
+
+        return repository.save(phieuDatPhong);
     }
 
     @Override
@@ -90,19 +114,60 @@ public class PhieuDatImplement implements IPhieuDatService {
     }
 
     @Override
+    public PhieuDatDetailsResponse getPhieuDatDetailsById(Integer id) throws Exception {
+        Optional<PhieuDatPhong> phieuDatPhongOptional = repository.findById(id);
+        if(phieuDatPhongOptional.isEmpty()){
+            throw new Exception("PhieuDatPhong not found.");
+        }
+        PhieuDatPhong phieuDat = phieuDatPhongOptional.get();
+        long tongTien = 0;
+        for (ChiTietPhieuDat chiTiet:phieuDat.getChiTietPhieuDats()) {
+            tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+        }
+        long soNgayThue = ChronoUnit.DAYS.between(phieuDat.getNgayBatDau(), phieuDat.getNgayTraPhong());
+        tongTien = tongTien * soNgayThue;
+
+        return getPhieuDatDetailsResponse(phieuDatPhongOptional.get(), tongTien);
+    }
+
+    @Override
     public PhieuDatResponse getPhieuDatResponseById(Integer id) throws Exception {
         PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(id);
         return getPhieuDatResponse(phieuDatPhong);
     }
 
+//    @Override
+//    public List<PhieuDatResponse> getPhieuDatPhongByIdKhachHang(Integer idKhachHang) throws Exception {
+//        KhachHang khachHang = khachHangService.getKhachHangById(idKhachHang);
+//        List<PhieuDatPhong> phieuDatPhongs = repository.findByKhachHang_IdKhachHang(khachHang.getIdKhachHang());
+//        List<PhieuDatResponse> responses = new ArrayList<>();
+//        for (PhieuDatPhong phieuDat:phieuDatPhongs) {
+//            responses.add(getPhieuDatResponse(phieuDat));
+//        }
+//        Collections.reverse(responses);
+//        return responses;
+//    }
+
     @Override
-    public List<PhieuDatResponse> getPhieuDatPhongByIdKhachHang(Integer idKhachHang) throws Exception {
-        KhachHang khachHang = khachHangService.getKhachHangById(idKhachHang);
+    public List<PhieuDatUserResponse> getPhieuDatUserByIdKhachHang(/*Integer idKhachHang*/) throws Exception {
+        var context = SecurityContextHolder.getContext();
+        String username = context.getAuthentication().getName();
+        TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhap(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        KhachHang khachHang = taiKhoan.getKhachHang();
+//        KhachHang khachHang = khachHangService.getKhachHangById(idKhachHang);
         List<PhieuDatPhong> phieuDatPhongs = repository.findByKhachHang_IdKhachHang(khachHang.getIdKhachHang());
-        List<PhieuDatResponse> responses = new ArrayList<>();
+        List<PhieuDatUserResponse> responses = new ArrayList<>();
         for (PhieuDatPhong phieuDat:phieuDatPhongs) {
-            responses.add(getPhieuDatResponse(phieuDat));
+            long tongTien = 0;
+            for (ChiTietPhieuDat chiTiet:phieuDat.getChiTietPhieuDats()) {
+                tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+            }
+            long soNgayThue = ChronoUnit.DAYS.between(phieuDat.getNgayBatDau(), phieuDat.getNgayTraPhong());
+            responses.add(getPhieuDatUserResponse(phieuDat, tongTien * soNgayThue));
         }
+        Collections.reverse(responses);
         return responses;
     }
 
@@ -163,6 +228,28 @@ public class PhieuDatImplement implements IPhieuDatService {
         return responses2;
     }
 
+    @Override
+    public List<ChiTietUserResponse> getChiTietUserResponseByIdPhieuDat(Integer idPhieuDat) throws Exception {
+        List<ChiTietPhieuDat> chiTietPhieuDats = chiTietPhieuDatService.getChiTietPhieuDatByIdPhieuDat(idPhieuDat);
+        List<ChiTietUserResponse> responses = new ArrayList<>();
+        for (ChiTietPhieuDat chitiet: chiTietPhieuDats) {
+            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet);
+            responses.add(response);
+        }
+        return responses;
+    }
+
+    @Override
+    public List<ChiTietUserResponse> getChiTietUserByIdPhieuDat(Integer idPhieuDat) throws Exception {
+        List<ChiTietPhieuDat> chiTietPhieuDats = chiTietPhieuDatService.getChiTietPhieuDatByIdPhieuDat(idPhieuDat);
+        List<ChiTietUserResponse> responses = new ArrayList<>();
+        for (ChiTietPhieuDat chitiet: chiTietPhieuDats) {
+            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet);
+            responses.add(response);
+        }
+        return responses;
+    }
+
     @Autowired
     private EntityManager entityManager;
     @Override
@@ -206,6 +293,81 @@ public class PhieuDatImplement implements IPhieuDatService {
         return responses;
     }
 
+    @Override
+    public PhieuDatPhong huyDatPhong(Integer id) throws Exception {
+        PhieuDatPhong phieuDat = getPhieuDatPhongById(id);
+        phieuDat.setTrangThaiHuy(0);
+        return repository.save(phieuDat);
+    }
+
+    @Override
+    public void capNhatDanhSachKhachHang(CapNhatKhachHangResquest req) throws Exception {
+        for (KhachHangRequest khachHang:req.getKhachHangs()) {
+            log.info(khachHang.toString());
+            if(khachHang.getHoTen() == null || khachHang.getSdt()== null || khachHang.getCmnd()== null
+                    || khachHang.getEmail()== null || khachHang.getHoTen().equals("") || khachHang.getSdt().equals("")
+                    || khachHang.getCmnd().equals("") || khachHang.getEmail().equals("")){
+                throw new Exception("Thông tin khách hàng chưa hợp lệ");
+            }
+
+        }
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @Override
+    public List<PhieuDatUserResponse> getPhieuDatByCccd(String cccd) throws Exception {
+        KhachHang khachHang = khachHangService.getKhachHangByCccd(cccd);
+        List<PhieuDatPhong> phieuDatPhongs = repository.findByKhachHang_IdKhachHang(khachHang.getIdKhachHang());
+        List<PhieuDatUserResponse> responses = new ArrayList<>();
+        for (PhieuDatPhong phieuDat:phieuDatPhongs) {
+            long tongTien = 0;
+            for (ChiTietPhieuDat chiTiet:phieuDat.getChiTietPhieuDats()) {
+                tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+            }
+            long soNgayThue = ChronoUnit.DAYS.between(phieuDat.getNgayBatDau(), phieuDat.getNgayTraPhong());
+            responses.add(getPhieuDatUserResponse(phieuDat, tongTien * soNgayThue));
+        }
+        Collections.reverse(responses);
+        return responses;
+    }
+
+    @Override
+    public void boSungChiTietPhieuDat(List<ChiTietPhieuDatRequest> chiTietPhieuDatRequests) throws Exception {
+        if(chiTietPhieuDatRequests.size() > 0) {
+            PhieuDatPhong phieuDat = getPhieuDatPhongById(chiTietPhieuDatRequests.get(0).getIdPhieuDat());
+
+            //Kiểm tra số lượng hạng phòng trống có đủ để đặt
+            for (ChiTietPhieuDatRequest chiTiet : chiTietPhieuDatRequests) {
+                if (!thongTinHangPhongService.kiemTraPhongHangPhongTrong(
+                        chiTiet.getIdHangPhong(),
+                        phieuDat.getNgayBatDau(),
+                        phieuDat.getNgayTraPhong(),
+                        chiTiet.getSoLuong())) {
+                    throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+                }
+            }
+
+            //Kiểm tra hạng phòng đã được đặt trước đó(nếu có + số lượng)
+            for (ChiTietPhieuDatRequest chiTietRequest : chiTietPhieuDatRequests) {
+                for (ChiTietPhieuDat chiTiet : phieuDat.getChiTietPhieuDats()) {
+                    if(Objects.equals(chiTietRequest.getIdHangPhong(), chiTiet.getIdChiTietPhieuDatEmb().getIdHangPhong())){
+                        chiTietRequest.setSoLuong(chiTiet.getSoLuong() + chiTietRequest.getSoLuong());
+                    }
+                }
+            }
+
+            //Thêm chi tiết phiếu đặt
+            chiTietPhieuDatService.addListChiTietPhieuDat(chiTietPhieuDatRequests);
+        }
+    }
+
+    @Override
+    public PhieuDatPhong capNhatTrangThaiPhieuDat(int idPhieuDat, int trangThai) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        phieuDatPhong.setTrangThaiHuy(trangThai);
+        return repository.save(phieuDatPhong);
+    }
+
 
     public PhieuDatResponse getPhieuDatResponse(PhieuDatPhong phieuDatPhong) throws Exception {
         return new PhieuDatResponse(
@@ -219,6 +381,41 @@ public class PhieuDatImplement implements IPhieuDatService {
                 phieuDatPhong.getNhanVien() == null ? null :
                         phieuDatPhong.getNhanVien().getIdNhanVien(),
                 phieuDatPhong.getTrangThaiHuy()
+        );
+    }
+
+    public PhieuDatUserResponse getPhieuDatUserResponse(PhieuDatPhong phieuDatPhong, long tongTien) throws Exception {
+        return new PhieuDatUserResponse(
+                phieuDatPhong.getIdPhieuDat(),
+                phieuDatPhong.getNgayBatDau(),
+                phieuDatPhong.getNgayTraPhong(),
+                phieuDatPhong.getGhiChu(),
+                phieuDatPhong.getNgayTao(),
+                phieuDatPhong.getTienTamUng(),
+                phieuDatPhong.getKhachHang().getIdKhachHang(),
+                phieuDatPhong.getNhanVien() == null ? null :
+                        phieuDatPhong.getNhanVien().getIdNhanVien(),
+                phieuDatPhong.getTrangThaiHuy(),
+                tongTien
+        );
+    }
+
+    public PhieuDatDetailsResponse getPhieuDatDetailsResponse(PhieuDatPhong phieuDatPhong, long tongTien) throws Exception {
+        List<ChiTietUserResponse> chiTietUserResponses = getChiTietUserByIdPhieuDat(phieuDatPhong.getIdPhieuDat());
+        return new PhieuDatDetailsResponse(
+                phieuDatPhong.getIdPhieuDat(),
+                phieuDatPhong.getNgayBatDau(),
+                phieuDatPhong.getNgayTraPhong(),
+                phieuDatPhong.getGhiChu(),
+                phieuDatPhong.getNgayTao(),
+                phieuDatPhong.getTienTamUng(),
+                phieuDatPhong.getKhachHang().getIdKhachHang(),
+                phieuDatPhong.getKhachHang().getHoTen(),
+                phieuDatPhong.getNhanVien() == null ? null :
+                        phieuDatPhong.getNhanVien().getIdNhanVien(),
+                phieuDatPhong.getTrangThaiHuy(),
+                tongTien,
+                chiTietUserResponses
         );
     }
 

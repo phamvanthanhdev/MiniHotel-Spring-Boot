@@ -111,10 +111,27 @@ public class ThongTinHangPhongController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @GetMapping("/sap-xep")
+    @GetMapping("/tim-kiem/noi-dung")
+    public ResponseEntity<List<ThongTinHangPhongUserResponse>> timKiemHangPhongCoNoiDung(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+                                                                                       @RequestParam("ngayDiDat") LocalDate ngayDiDat,
+                                                                                       @RequestParam("giaMin") Long giaMin,
+                                                                                       @RequestParam("giaMax") Long giaMax,
+                                                                                         @RequestParam("noiDung") String noiDung) throws Exception {
+        List<ThongTinHangPhongUserResponse> responses = thongTinHangPhongService.timKiemThongTinHangPhongUser(ngayDenDat, ngayDiDat, giaMin, giaMax, noiDung);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @GetMapping("/dat-thue")
     public ResponseEntity<List<ThongTinHangPhongUserResponse>> layHangPhongTheoSoLuongDatThue(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
                                                                                              @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
         List<ThongTinHangPhongUserResponse> responses = thongTinHangPhongService.sapXepHangPhongTheoSoLuongDatThue(ngayDenDat, ngayDiDat);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @GetMapping("/giam-gia")
+    public ResponseEntity<List<ThongTinHangPhongUserResponse>> layHangPhongTheoGiamGia(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+                                                                                              @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
+        List<ThongTinHangPhongUserResponse> responses = thongTinHangPhongService.sapXepHangPhongTheoGiamGia(ngayDenDat, ngayDiDat);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 

@@ -10,11 +10,11 @@ import java.util.List;
 public class PhieuThuePhongRequest {
     private LocalDate ngayDen;
     private LocalDate ngayDi;
-    private boolean trangThai;
-    private LocalDate ngayTao;
+//    private boolean trangThai;
+//    private LocalDate ngayTao;
 
     private Integer idKhachHang;
-    private Integer idNhanVien;
+//    private Integer idNhanVien;
     private Integer idPhieuDat;
 
     private List<ChiTietRequest> chiTietRequests;

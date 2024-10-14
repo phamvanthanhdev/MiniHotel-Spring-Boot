@@ -15,4 +15,5 @@ public interface IThongTinPhongService {
     public List<ThongTinPhongHienTaiResponse> getThongTinPhongHienTai();
 
     List<PhongTrongResponse> getPhongTrongByIdHangPhong(int idHangPhong, LocalDate ngayDenThue, LocalDate ngayDiThue);
+    List<ThongTinPhongResponse> getThongTinPhongTheoHangPhong(LocalDate ngayDenThue, LocalDate ngayDiThue, int idHangPhong);
 }

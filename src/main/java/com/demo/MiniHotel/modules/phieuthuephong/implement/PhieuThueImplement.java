@@ -35,6 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -54,6 +55,11 @@ public class PhieuThueImplement implements IPhieuThueService {
 
     @Override
     public PhieuThueResponse addNewPhieuThuePhong(PhieuThuePhongRequest request) throws Exception {
+        LocalDate ngayHienTai = LocalDate.now();
+        //Nếu ngày hiện tại trước ngày nhận phòng => không cho phép
+        if(ngayHienTai.isBefore(request.getNgayDen()))
+            throw new AppException(ErrorCode.NGAYNHANPHONG_NOT_VALID);
+
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info(authentication.getName());
 
@@ -212,20 +218,50 @@ public class PhieuThueImplement implements IPhieuThueService {
         }
 
         // Tính tổng tiền
+        LocalDate ngayTra = LocalDate.now(); // Ngày trả là ngày hiện tại
         long tongTien = 0;
+        long tongTienPhong = 0;
         for (ChiTietPhieuThueResponse chiTietPhieuThue:chiTietPhieuThueResponses) {
-            tongTien += chiTietPhieuThue.getTongTien();
+            // Nếu trả phòng sớm hơn dự kiến => tính ngày trả
+            long soNgayThue;
+            if(!ngayTra.isAfter(chiTietPhieuThue.getNgayDi())) {
+                // Nếu đến và đi trong cùng một ngày thì vẫn tính một ngày thuê
+                if (ngayTra.equals(chiTietPhieuThue.getNgayDen())) {
+                    soNgayThue = 1;
+                } else {
+                    soNgayThue = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), ngayTra);
+                }
+                chiTietPhieuThue.setNgayDi(ngayTra);
+            }else{
+                soNgayThue = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
+            }
+
+            // Nếu tiền phải trả là âm => bằng 0
+            long tienPhong = chiTietPhieuThue.getDonGia() * soNgayThue - chiTietPhieuThue.getTienGiamGia();
+            if(tienPhong < 0) {
+                tienPhong = 0;
+                chiTietPhieuThue.setTongTienPhong(tienPhong);
+            }else {
+                chiTietPhieuThue.setTongTienPhong(tienPhong);
+            }
+
+            chiTietPhieuThue.setTongTienTatCa(tienPhong
+                    + chiTietPhieuThue.getTongTienDichVu()
+                    + chiTietPhieuThue.getTongTienPhuThu());
+
+            tongTien += chiTietPhieuThue.getTongTienTatCa();
+            tongTienPhong += chiTietPhieuThue.getTongTienPhong();
         }
 
-        for (ChiTietSuDungDichVuResponse chiTietDichVu:chiTietSuDungDichVuResponses) {
-            if(!chiTietDichVu.getDaThanhToan())
-                tongTien += chiTietDichVu.getSoLuong() * chiTietDichVu.getDonGia();
-        }
-
-        for (ChiTietPhuThuResponse chiTietPhuThu:chiTietPhuThuResponses) {
-            if(!chiTietPhuThu.getDaThanhToan())
-                tongTien += chiTietPhuThu.getSoLuong() * chiTietPhuThu.getDonGia();
-        }
+//        for (ChiTietSuDungDichVuResponse chiTietDichVu:chiTietSuDungDichVuResponses) {
+//            if(!chiTietDichVu.getDaThanhToan())
+//                tongTien += chiTietDichVu.getSoLuong() * chiTietDichVu.getDonGia();
+//        }
+//
+//        for (ChiTietPhuThuResponse chiTietPhuThu:chiTietPhuThuResponses) {
+//            if(!chiTietPhuThu.getDaThanhToan())
+//                tongTien += chiTietPhuThu.getSoLuong() * chiTietPhuThu.getDonGia();
+//        }
 
         // Tiền tạm ứng chỉ được tính cho lần trả phòng cuối cùng
         long tienTamUng = 0;
@@ -240,6 +276,7 @@ public class PhieuThueImplement implements IPhieuThueService {
                 .hoTenKhach(phieuThueResponse.getHoTenKhach())
                 .tongTien(tongTien)
                 .tienTamUng(tienTamUng)
+                .tongTienPhong(tongTienPhong)
                 .chiTietPhieuThues(chiTietPhieuThueResponses)
                 .chiTietDichVus(chiTietSuDungDichVuResponses)
                 .chiTietPhuThus(chiTietPhuThuResponses)
@@ -249,7 +286,7 @@ public class PhieuThueImplement implements IPhieuThueService {
     @Override
     public TraPhongResponse traPhong(TraPhongRequest request) throws Exception {
         //tao mot hoa don moi
-        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu());
+        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu(), request.getIdPhieuThue(), request.getPhanTramGiam());
         String soHoaDon = hoaDonResponse.getSoHoaDon();
         List<ChiTietPhieuThueResponse> chiTietPhieuThueResponses = new ArrayList<>();
         for (int idChiTietPhieuThue: request.getIdChiTietPhieuThues()) {
@@ -279,6 +316,30 @@ public class PhieuThueImplement implements IPhieuThueService {
                             getChiTietPhuThuByIdChiTietPhieuThue(chiTietPhieuThue.getIdChiTietPhieuThue()));
         }
 
+        LocalDate ngayTra = LocalDate.now(); // Ngày trả là ngày hiện tại
+        for (ChiTietPhieuThueResponse chiTietPhieuThue:chiTietPhieuThueResponses) {
+            // Nếu trả phòng sớm hơn dự kiến => tính ngày trả => cập nhật thời gian
+            long soNgayThue;
+            if(!ngayTra.isAfter(chiTietPhieuThue.getNgayDi())) {
+                // Nếu đến và đi trong cùng một ngày thì vẫn tính một ngày thuê
+                if (ngayTra.equals(chiTietPhieuThue.getNgayDen())) {
+                    soNgayThue = 1;
+                } else {
+                    soNgayThue = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), ngayTra);
+                }
+                // Cập nhật lại thời gian trả
+                chiTietPhieuThueService.capNhatNgayTraPhong(chiTietPhieuThue.getIdChiTietPhieuThue(), ngayTra);
+                chiTietPhieuThue.setNgayDi(ngayTra);
+            }else{
+                soNgayThue = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
+            }
+
+            chiTietPhieuThue.setTongTienPhong(chiTietPhieuThue.getDonGia() * soNgayThue - chiTietPhieuThue.getTienGiamGia());
+            chiTietPhieuThue.setTongTienTatCa(chiTietPhieuThue.getDonGia() * soNgayThue
+                    + chiTietPhieuThue.getTongTienDichVu() + chiTietPhieuThue.getTongTienPhuThu()
+                    - chiTietPhieuThue.getTienGiamGia());
+        }
+
         return TraPhongResponse.builder()
                 .idPhieuThue(phieuThue.getIdPhieuThue())
                 .ngayNhanPhong(phieuThue.getNgayDen())
@@ -301,6 +362,7 @@ public class PhieuThueImplement implements IPhieuThueService {
     private PhieuThueResponse convertPhieuThuePhongResponse(PhieuThuePhong phieuThuePhong){
         Integer idPhieuDat = phieuThuePhong.getPhieuDatPhong() == null ? null : phieuThuePhong.getPhieuDatPhong().getIdPhieuDat();
         Long tienTamUng = phieuThuePhong.getPhieuDatPhong() == null ? 0 : phieuThuePhong.getPhieuDatPhong().getTienTamUng();
+
         return new PhieuThueResponse(
                 phieuThuePhong.getIdPhieuThue(),
                 phieuThuePhong.getNgayDen(),

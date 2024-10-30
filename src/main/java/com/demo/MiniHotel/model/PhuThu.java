@@ -22,10 +22,14 @@ public class PhuThu {
     private Integer idPhuThu;
     @Column(name = "noi_dung", nullable = false)
     private String noiDung;
-    @Column(name = "don_gia", nullable = false)
-    private Long donGia;
+//    @Column(name = "don_gia", nullable = false)
+//    private Long donGia;
 
     @JsonIgnore
     @OneToMany(mappedBy = "phuThu")
     private List<ChiTietPhuThu> chiTietPhuThus;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "phuThu")
+    private List<ChiTietThayDoiGiaPhuThu> chiTietThayDoiGiaPhuThus;
 }

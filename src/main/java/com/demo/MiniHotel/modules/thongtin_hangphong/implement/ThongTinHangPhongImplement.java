@@ -30,6 +30,25 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
     }
 
     @Override
+    public List<ThongTinHangPhongResponse> getThongTinHangPhongResponse() throws Exception {
+        List<ThongTinHangPhong> thongTinHangPhongs = getAllThongTinHangPhong();
+
+        List<ThongTinHangPhongResponse> responses = new ArrayList<>();
+        for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
+            responses.add(convertThongTinHangPhongResponse(thongTinHangPhong));
+        }
+
+        Collections.sort(responses, new Comparator<ThongTinHangPhongResponse>() {
+            @Override
+            public int compare(ThongTinHangPhongResponse o1, ThongTinHangPhongResponse o2) {
+                return o1.getIdHangPhong() < o2.getIdHangPhong() ? 1 : -1;
+            }
+        });
+
+        return responses;
+    }
+
+    @Override
     public ThongTinHangPhong getThongTinHangPhongById(Integer id) throws Exception {
         Optional<ThongTinHangPhong> thongTinHangPhongOptional = repository.findById(id);
         if(thongTinHangPhongOptional.isEmpty())

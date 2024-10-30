@@ -1,9 +1,11 @@
 package com.demo.MiniHotel.modules.thongtin_phong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.Phong;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.PhongTrongResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongHienTaiResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongResponse;
+import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongSapXepResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.service.IThongTinPhongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,5 +51,14 @@ public class ThongTinPhongController {
                                                                                      @RequestParam("idHangPhong") int idHangPhong){
         List<ThongTinPhongResponse> responses = thongTinPhongService.getThongTinPhongTheoHangPhong(ngayDenThue, ngayDiThue, idHangPhong);
         return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @GetMapping("/hien-tai/sap-xep")
+    public ResponseEntity<ApiResponse> getThongTinPhongSapXepsHienTai(){
+        List<ThongTinPhongSapXepResponse> responses = thongTinPhongService.getThongTinPhongHienTaiSapXep();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
     }
 }

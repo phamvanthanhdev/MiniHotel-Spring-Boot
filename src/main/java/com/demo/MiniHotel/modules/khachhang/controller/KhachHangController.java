@@ -2,11 +2,18 @@ package com.demo.MiniHotel.modules.khachhang.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.KhachHang;
+import com.demo.MiniHotel.modules.khachhang.dto.FileUploadResponse;
 import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
 import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
+import com.demo.MiniHotel.modules.khachhang.dto.KhachHangUpload;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,12 +31,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/khach-hang")
 @RequiredArgsConstructor
 @CrossOrigin("*")
+@Slf4j
 public class KhachHangController {
     private final IKhachHangService KhachHangService;
     @PostMapping("/")
@@ -61,14 +73,13 @@ public class KhachHangController {
     }
 
     @GetMapping("/tim-kiem-cccd")
-    public ResponseEntity<KhachHangResponse> getKhachHangByCccd(@RequestParam("cccd") String cccd) {
-        KhachHangResponse khachHangResponse = null;
-        try {
-            khachHangResponse = KhachHangService.getKhachHangResponseByCCCD(cccd);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new KhachHangResponse(), HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(khachHangResponse, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getKhachHangByCccd(@RequestParam("cccd") String cccd) throws Exception {
+        KhachHangResponse khachHangResponse = khachHangResponse = KhachHangService.getKhachHangResponseByCCCD(cccd);
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(khachHangResponse)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/phieu-dat")
@@ -122,7 +133,8 @@ public class KhachHangController {
     }
 
     @PostMapping("/upload-excel")
-    public ResponseEntity<ApiResponse> uploadExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ApiResponse> uploadExcel(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam int idPhieuDat) {
         // Kiểm tra xem file có trống không
         if (file.isEmpty()) {
             return new ResponseEntity<>(ApiResponse.builder()
@@ -149,7 +161,7 @@ public class KhachHangController {
 
             // Thêm thời gian vào tên file
             String timestamp = now.format(formatter);
-            String newFilename = timestamp + "_" + originalFilename;
+            String newFilename = timestamp + "_" + idPhieuDat + "_" + originalFilename;
 
             // Lưu
             Path filePath = uploadPath.resolve(newFilename);
@@ -166,5 +178,127 @@ public class KhachHangController {
                     .message("Có lỗi xảy ra khi tải file")
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // Đọc tên file trong folder
+    @GetMapping("/name-excel")
+    public ResponseEntity<ApiResponse> getNameExcel() {
+        File folder = new File("src/main/resources/uploads");
+        File[] listOfFiles = folder.listFiles();
+        List<FileUploadResponse> responses = new ArrayList<>();
+        if(listOfFiles != null) {
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
+                    String fileName =  listOfFiles[i].getName();
+                    // Tách tên file theo ký tự "_"
+                    String[] parts = fileName.split("_");
+
+                    // Phần đầu là thời gian
+                    String timestamp = parts[0];
+
+                    // Phần thứ hai là idPhieuDat
+                    int idPhieuDat = Integer.parseInt(parts[1]);
+
+                    // Phần thứ ba là tên file khi upload
+                    String tenFile = parts[2];
+
+                    // Định dạng thời gian để chuyển đổi lại về LocalDateTime
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                    LocalDateTime dateTime = LocalDateTime.parse(timestamp, formatter);
+
+                    // Định dạng thời gian theo dạng ss:mm:HH dd/MM/yyyy
+                    DateTimeFormatter formatterResponse = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
+
+                    // Chuyển đổi LocalDateTime sang chuỗi với định dạng mong muốn
+                    String formattedDateTime = dateTime.format(formatterResponse);
+
+                    responses.add(FileUploadResponse.builder()
+                                    .tenFile(tenFile)
+                                    .tenFileOriginal(fileName)
+                                    .thoiGianOriginal(dateTime)
+                                    .thoiGian(formattedDateTime)
+                                    .idPhieuDat(idPhieuDat)
+                            .build());
+                }
+            }
+        }
+
+        Collections.sort(responses, new Comparator<FileUploadResponse>() {
+            @Override
+            public int compare(FileUploadResponse o1, FileUploadResponse o2) {
+                return o1.getThoiGianOriginal().isBefore(o2.getThoiGianOriginal()) ? 1 : -1;
+            }
+        });
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/ten-file/{tenFile}")
+    public ResponseEntity<ApiResponse> getDataFileTheoTen(@PathVariable("tenFile") String tenFile) throws IOException, InvalidFormatException {
+        File f = new File("src/main/resources/uploads/" + tenFile);
+        if(f.exists() && !f.isDirectory()) {
+            // Đọc data trong file
+            List<KhachHangUpload> khachHangUploads = new ArrayList<KhachHangUpload>();
+            XSSFWorkbook workbook = new XSSFWorkbook(f);
+            XSSFSheet worksheet = workbook.getSheetAt(0);
+
+            for(int i=1;i<worksheet.getPhysicalNumberOfRows() ;i++) {
+                KhachHangUpload khachHangUpload = new KhachHangUpload();
+
+                XSSFRow row = worksheet.getRow(i);
+
+                if(row.getCell(0).getStringCellValue().equals("")
+                    && row.getCell(1).getStringCellValue().trim().equals("")
+                    && row.getCell(2).getStringCellValue().trim().equals("")
+                    && row.getCell(3).getStringCellValue().trim().equals("")
+                    && row.getCell(4).getStringCellValue().trim().equals("")
+                    && row.getCell(5).getStringCellValue().trim().equals("")
+                    && row.getCell(6).getStringCellValue().trim().equals("")){
+                 //
+                }else{
+                    khachHangUpload.setCccd(row.getCell(0).getStringCellValue());
+                    khachHangUpload.setHoTen(row.getCell(1).getStringCellValue());
+                    khachHangUpload.setGioiTinh(row.getCell(2).getStringCellValue());
+                    khachHangUpload.setNgaySinh(row.getCell(3).getStringCellValue());
+                    khachHangUpload.setSdt(row.getCell(4).getStringCellValue());
+                    khachHangUpload.setEmail(row.getCell(5).getStringCellValue());
+                    khachHangUpload.setDiaChi(row.getCell(6).getStringCellValue());
+
+                    khachHangUploads.add(khachHangUpload);
+                }
+            }
+
+
+
+            return new ResponseEntity<>(ApiResponse.builder()
+                    .code(200)
+                    .result(khachHangUploads)
+                    .build(), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(400)
+                .message("File không tồn tại")
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/import-khach-hang")
+    public ResponseEntity<ApiResponse> importKhachHang(@RequestBody KhachHangUpload khachHangUpload) throws Exception {
+        ApiResponse apiResponse = KhachHangService.importKhachHangUpload(khachHangUpload);
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/import-toan-bo")
+    public ResponseEntity<ApiResponse> importToanBoKhachHang(@RequestBody List<KhachHangUpload> khachHangUploads) throws Exception {
+        KhachHangService.importToanBoKhachHang(khachHangUploads);
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .message("Import thông tin khách hàng thành công")
+                .build(), HttpStatus.OK);
     }
 }

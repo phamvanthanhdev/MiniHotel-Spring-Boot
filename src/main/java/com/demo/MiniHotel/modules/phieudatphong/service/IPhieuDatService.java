@@ -30,10 +30,10 @@ public interface IPhieuDatService {
     public List<ChiTietPhieuDatResponse2> getChiTietPhieuDatsByIdPhieuDat2(Integer idPhieuDat) throws Exception;
     public List<ChiTietUserResponse> getChiTietUserByIdPhieuDat(Integer idPhieuDat) throws Exception;
     public List<ChiTietUserResponse> getChiTietUserResponseByIdPhieuDat(Integer idPhieuDat) throws Exception;
-    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoNgay(LocalDate ngay) ;
+    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoNgay(PhieuDatTheoNgayRequest request) ;
     public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoGian(LocalDate ngayBatDauTim,LocalDate ngayKetThucTim) ;
     public List<PhieuDatResponse> getPhieuDatTheoCMND(String cmnd) throws Exception;
-    public PhieuDatPhong huyDatPhong(Integer id) throws Exception;
+    public PhieuDatPhong huyDatPhong(HuyDatRequest request) throws Exception;
     public void capNhatDanhSachKhachHang(CapNhatKhachHangResquest req) throws Exception;
     public List<PhieuDatUserResponse> getPhieuDatByCccd(String cccd) throws Exception;
     void boSungChiTietPhieuDat(List<ChiTietPhieuDatRequest> chiTietPhieuDatRequests) throws Exception;

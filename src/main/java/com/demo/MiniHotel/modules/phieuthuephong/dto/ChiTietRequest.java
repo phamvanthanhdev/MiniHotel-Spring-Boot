@@ -15,4 +15,5 @@ public class ChiTietRequest {
     private LocalDate ngayDen;
     private LocalDate ngayDi;
     private Long donGia;
+    private Long tienGiamGia;
 }

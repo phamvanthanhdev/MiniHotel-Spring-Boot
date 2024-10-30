@@ -1,8 +1,10 @@
 package com.demo.MiniHotel.modules.khachhang.service;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.KhachHang;
 import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
 import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
+import com.demo.MiniHotel.modules.khachhang.dto.KhachHangUpload;
 
 import java.util.List;
 
@@ -20,4 +22,6 @@ public interface IKhachHangService {
 
     KhachHangResponse getKhachHangResponseById(Integer id) throws Exception;
     KhachHangResponse updateKhachHangResponse(int id, KhachHangRequest khachHangRequest) throws Exception;
+    ApiResponse importKhachHangUpload(KhachHangUpload request) throws Exception;
+    void importToanBoKhachHang(List<KhachHangUpload> khachHangUploads) throws Exception;
 }

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ChiTietPhieuThueRepository extends JpaRepository<ChiTietPhieuThue, Integer> {
     List<ChiTietPhieuThue> findByPhieuThuePhong_IdPhieuThue(Integer idPhieuThue);
+    List<ChiTietPhieuThue> findByHoaDon_SoHoaDon(String soHoaDon);
 }

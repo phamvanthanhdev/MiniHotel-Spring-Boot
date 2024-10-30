@@ -45,4 +45,6 @@ public interface IChiTietPhieuThueService {
     ChiTietPhieuThue themChiTietPhieuThue(ChiTietPhieuThueRequest request) throws Exception;
     ChiTietPhieuThueResponse thayDoiNgayTraPhong(Integer id, LocalDate ngayTraPhong) throws Exception;
     ChiTietPhieuThue themHoaDonToChiTietPhieuThue(Integer id, String soHoaDon) throws Exception;
+    ChiTietPhieuThueResponse capNhatNgayTraPhong(Integer id, LocalDate ngayTraPhong) throws Exception;
+    ChiTietPhieuThueResponse capNhatTienGiamGia(Integer id, long tienGiamGia) throws Exception;
 }

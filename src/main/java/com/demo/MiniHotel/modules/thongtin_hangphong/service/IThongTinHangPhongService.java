@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface IThongTinHangPhongService {
     public List<ThongTinHangPhong> getAllThongTinHangPhong();
+    public List<ThongTinHangPhongResponse> getThongTinHangPhongResponse() throws Exception;
     public ThongTinHangPhong getThongTinHangPhongById(Integer id) throws Exception;
     public ThongTinHangPhongUserResponse getThongTinHangPhongSoLuongById(Integer id, LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
     public Long getDonGiaThongTinHangPhongById(Integer id) throws Exception;

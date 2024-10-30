@@ -46,7 +46,7 @@ public class NhanVienController {
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
 
-    @GetMapping("/ten-dang-nhap")
+    @GetMapping("/dang-nhap")
     public ResponseEntity<NhanVien> getNhanVienByTenDangNhap() throws Exception {
         NhanVien nhanVien = nhanVienService.getNhanVienByToken();
         return new ResponseEntity<>(nhanVien, HttpStatus.OK);

@@ -10,8 +10,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChiTietKhachThueResponse {
+    private int idChiTietPhieuThue;
+    private int idKhachHang;
     private String maPhong;
     private String hoTen;
+    private String cccd;
     private String sdt;
     private LocalDate ngayDen;
     private LocalDate ngayDi;

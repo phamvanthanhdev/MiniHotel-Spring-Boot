@@ -47,4 +47,12 @@ public class HangPhong {
     @JsonIgnore
     @OneToMany(mappedBy = "hangPhong")
     private List<ChiTietPhieuDat> chiTietPhieuDats;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "hangPhong")
+    private List<ChiTietKhuyenMai> chiTietKhuyenMais;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "hangPhong")
+    private List<ChiTietThayDoiGiaPhong> chiTietThayDoiGiaPhongs;
 }

@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.loaiphong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.LoaiPhong;
 import com.demo.MiniHotel.modules.loaiphong.dto.LoaiPhongRequest;
 import com.demo.MiniHotel.modules.loaiphong.service.ILoaiPhongService;
@@ -23,9 +24,12 @@ public class LoaiPhongController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<LoaiPhong>> getAllLoaiPhong(){
+    public ResponseEntity<ApiResponse> getAllLoaiPhong(){
         List<LoaiPhong> LoaiPhongs = LoaiPhongService.getAllLoaiPhong();
-        return new ResponseEntity<>(LoaiPhongs, HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(LoaiPhongs)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

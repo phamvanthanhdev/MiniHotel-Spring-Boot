@@ -13,4 +13,5 @@ public class ChiTietUserResponse {
     private Integer soLuong;
     private String hinhAnh;
     private Long donGia;
+    private long tongTien;
 }

@@ -24,18 +24,7 @@ public class PhieuThueController {
     private final IPhieuThueService PhieuThuePhongService;
     @PostMapping("/")
     public ResponseEntity<ApiResponse> thuePhongKhachSan(@RequestBody PhieuThuePhongRequest request) throws Exception {
-//        PhieuThueResponse response;
-//        try {
-//            response = PhieuThuePhongService.addNewPhieuThuePhong(request);
-//        }catch (SoLuongPhongTrongException ex){
-//            return new ResponseEntity<>(ApiResponse.builder()
-//                    .code(200)
-//                    .message("Số lượng phòng không hợp lệ")
-//                    .build(), HttpStatus.BAD_REQUEST);
-//        }
-//        catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
+
 
         PhieuThueResponse response = PhieuThuePhongService.addNewPhieuThuePhong(request);
         return new ResponseEntity<>(ApiResponse.builder()
@@ -63,7 +52,7 @@ public class PhieuThueController {
     }
 
     @GetMapping("/khach-hang")
-    public ResponseEntity<List<PhieuThueResponse>> getPhieuThuePhongResponseById(@RequestParam("cmnd") String cmnd) throws Exception {
+    public ResponseEntity<List<PhieuThueResponse>> getPhieuThuePhongResponseByCMND(@RequestParam("cmnd") String cmnd) throws Exception {
         List<PhieuThueResponse> responses = PhieuThuePhongService.timKiemPhieuThueTheoCmnd(cmnd);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
@@ -123,4 +112,6 @@ public class PhieuThueController {
                 .result(response)
                 .build(), HttpStatus.OK);
     }
+
+
 }

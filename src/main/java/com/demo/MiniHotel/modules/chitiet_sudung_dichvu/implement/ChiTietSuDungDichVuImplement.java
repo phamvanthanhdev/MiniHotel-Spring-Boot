@@ -167,4 +167,15 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         }
         return chiTietSuDungDichVus;
     }
+
+    @Override
+    public long getTongTienChiTietSuDungDichVu(Integer idChiTietPhieuThue) throws Exception {
+        long tongTien = 0;
+        List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
+        for (ChiTietSuDungDichVu dichVu:chiTietSuDungDichVus) {
+            if(!dichVu.getDaThanhToan())
+                tongTien += dichVu.getDonGia() * dichVu.getSoLuong();
+        }
+        return tongTien;
+    }
 }

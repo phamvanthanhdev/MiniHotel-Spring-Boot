@@ -27,8 +27,10 @@ public class PhieuThuePhong {
     private LocalDate ngayDi;
     @Column(name = "ngay_tao", nullable = false)
     private LocalDate ngayTao;
-//    @Column(name = "trang_thai", nullable = false)
-//    private boolean trangThai;
+
+//    @Column(name = "phan_tram_giam", nullable = false)
+//    private int phanTramGiam;
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idkhach_hang", nullable = false)

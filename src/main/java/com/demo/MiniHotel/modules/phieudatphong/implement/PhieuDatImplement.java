@@ -68,7 +68,7 @@ public class PhieuDatImplement implements IPhieuDatService {
         for (ChiTietRequest chiTietRequest: request.getChiTietRequests()) {
             if (!thongTinHangPhongService.kiemTraPhongHangPhongTrong(chiTietRequest.getIdHangPhong(), request.getNgayBatDau(),
                     request.getNgayTraPhong(), chiTietRequest.getSoLuong())) {
-                throw new SoLuongPhongTrongException("Số lượng phòng trống còn lại không đủ để đặt");
+                throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
             }
         }
 
@@ -109,7 +109,6 @@ public class PhieuDatImplement implements IPhieuDatService {
         if(PhieuDatPhongOptional.isEmpty()){
             throw new Exception("PhieuDatPhong not found.");
         }
-
         return PhieuDatPhongOptional.get();
     }
 
@@ -230,10 +229,12 @@ public class PhieuDatImplement implements IPhieuDatService {
 
     @Override
     public List<ChiTietUserResponse> getChiTietUserResponseByIdPhieuDat(Integer idPhieuDat) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        long soNgayDat = ChronoUnit.DAYS.between(phieuDatPhong.getNgayBatDau(), phieuDatPhong.getNgayTraPhong());
         List<ChiTietPhieuDat> chiTietPhieuDats = chiTietPhieuDatService.getChiTietPhieuDatByIdPhieuDat(idPhieuDat);
         List<ChiTietUserResponse> responses = new ArrayList<>();
         for (ChiTietPhieuDat chitiet: chiTietPhieuDats) {
-            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet);
+            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet, soNgayDat);
             responses.add(response);
         }
         return responses;
@@ -241,10 +242,12 @@ public class PhieuDatImplement implements IPhieuDatService {
 
     @Override
     public List<ChiTietUserResponse> getChiTietUserByIdPhieuDat(Integer idPhieuDat) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        long soNgayDat = ChronoUnit.DAYS.between(phieuDatPhong.getNgayBatDau(), phieuDatPhong.getNgayTraPhong());
         List<ChiTietPhieuDat> chiTietPhieuDats = chiTietPhieuDatService.getChiTietPhieuDatByIdPhieuDat(idPhieuDat);
         List<ChiTietUserResponse> responses = new ArrayList<>();
         for (ChiTietPhieuDat chitiet: chiTietPhieuDats) {
-            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet);
+            ChiTietUserResponse response = chiTietPhieuDatService.convertChiTietUserResponse(chitiet, soNgayDat);
             responses.add(response);
         }
         return responses;
@@ -253,16 +256,20 @@ public class PhieuDatImplement implements IPhieuDatService {
     @Autowired
     private EntityManager entityManager;
     @Override
-    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoNgay(LocalDate ngay) {
-        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuDatTheoNgay", PhieuDatPhong.class)
-                .registerStoredProcedureParameter("thoi_gian", LocalDate.class, ParameterMode.IN)
-                .setParameter("thoi_gian", ngay);
-        List<PhieuDatPhong> phieuDatPhongs = query.getResultList();
-        List<PhieuDatThoiGianResponse> responses = new ArrayList<>();
-        for (PhieuDatPhong phieuDatPhong: phieuDatPhongs) {
-            responses.add(convertPhieuDatThoiGianResponse(phieuDatPhong));
+    public List<PhieuDatThoiGianResponse> getPhieuDatPhongTheoNgay(PhieuDatTheoNgayRequest request) {
+        List<PhieuDatPhong> phieuDatPhongs;
+        if(request.getTrangThai() < 0){
+            phieuDatPhongs = repository.findByNgayBatDau(request.getNgay());
+        }else{
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuDatTheoNgay", PhieuDatPhong.class)
+                    .registerStoredProcedureParameter("ngay", LocalDate.class, ParameterMode.IN)
+                    .registerStoredProcedureParameter("trangThai", Integer.class, ParameterMode.IN)
+                    .setParameter("ngay", request.getNgay())
+                    .setParameter("trangThai", request.getTrangThai());
+            phieuDatPhongs = query.getResultList();
         }
-        return responses;
+
+        return phieuDatPhongs.stream().map(this::convertPhieuDatThoiGianResponse).toList();
     }
 
     @Override
@@ -294,9 +301,12 @@ public class PhieuDatImplement implements IPhieuDatService {
     }
 
     @Override
-    public PhieuDatPhong huyDatPhong(Integer id) throws Exception {
-        PhieuDatPhong phieuDat = getPhieuDatPhongById(id);
-        phieuDat.setTrangThaiHuy(0);
+    public PhieuDatPhong huyDatPhong(HuyDatRequest request) throws Exception {
+        PhieuDatPhong phieuDat = getPhieuDatPhongById(request.getIdPhieuDat());
+        if(phieuDat.getTrangThaiHuy() != 0)
+            throw new AppException(ErrorCode.PHIEUDAT_NOT_CANCEL);
+        phieuDat.setTrangThaiHuy(2);
+        phieuDat.setTienTraLai(request.getTienTra());
         return repository.save(phieuDat);
     }
 
@@ -414,6 +424,7 @@ public class PhieuDatImplement implements IPhieuDatService {
                 phieuDatPhong.getNhanVien() == null ? null :
                         phieuDatPhong.getNhanVien().getIdNhanVien(),
                 phieuDatPhong.getTrangThaiHuy(),
+                phieuDatPhong.getTienTraLai(),
                 tongTien,
                 chiTietUserResponses
         );
@@ -422,18 +433,27 @@ public class PhieuDatImplement implements IPhieuDatService {
     public PhieuDatThoiGianResponse convertPhieuDatThoiGianResponse(PhieuDatPhong phieuDatPhong){
         String tenKhachHang = phieuDatPhong.getKhachHang().getHoTen();
         String cmnd = phieuDatPhong.getKhachHang().getCmnd();
+        String sdt = phieuDatPhong.getKhachHang().getSdt();
+
+        long soNgayThue = ChronoUnit.DAYS.between(phieuDatPhong.getNgayBatDau(), phieuDatPhong.getNgayTraPhong());
+        long tongTien = 0;
+        for (ChiTietPhieuDat chiTiet:phieuDatPhong.getChiTietPhieuDats()) {
+            tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+        }
+
+        tongTien = tongTien * soNgayThue;
         return new PhieuDatThoiGianResponse(
                 phieuDatPhong.getIdPhieuDat(),
                 phieuDatPhong.getNgayBatDau(),
                 phieuDatPhong.getNgayTraPhong(),
-                phieuDatPhong.getGhiChu(),
                 phieuDatPhong.getNgayTao(),
+                soNgayThue,
+                phieuDatPhong.getGhiChu(),
                 phieuDatPhong.getTienTamUng(),
-                phieuDatPhong.getKhachHang().getIdKhachHang(),
+                tongTien,
                 tenKhachHang,
                 cmnd,
-                phieuDatPhong.getNhanVien() == null ? null :
-                        phieuDatPhong.getNhanVien().getIdNhanVien(),
+                sdt,
                 phieuDatPhong.getTrangThaiHuy()
         );
     }

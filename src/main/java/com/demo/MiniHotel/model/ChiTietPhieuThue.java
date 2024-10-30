@@ -30,6 +30,8 @@ public class ChiTietPhieuThue {
     private Long donGia;
     @Column(name = "da_thanh_toan", nullable = false)
     private Boolean daThanhToan;
+    @Column(name = "tien_giam_gia", nullable = false)
+    private Long tienGiamGia;
 
 
     @JsonIgnore

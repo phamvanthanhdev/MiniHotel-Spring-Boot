@@ -94,7 +94,7 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
     }
 
     @Override
-    public ChiTietUserResponse convertChiTietUserResponse(ChiTietPhieuDat chiTietPhieuDat) throws Exception {
+    public ChiTietUserResponse convertChiTietUserResponse(ChiTietPhieuDat chiTietPhieuDat, long soNgayDat) throws Exception {
         ChiTietUserResponse response = new ChiTietUserResponse();
         response.setIdHangPhong(chiTietPhieuDat.getIdChiTietPhieuDatEmb().getIdHangPhong());
         response.setTenHangPhong(chiTietPhieuDat.getHangPhong().getTenHangPhong());
@@ -102,6 +102,7 @@ public class ChiTietPhieuDatImplement implements IChiTietPhieuDatService {
         response.setHinhAnh(hangPhongService.getHinhAnhByIdHangPhong(
                 chiTietPhieuDat.getIdChiTietPhieuDatEmb().getIdHangPhong()));
         response.setDonGia(chiTietPhieuDat.getDonGia());
+        response.setTongTien(chiTietPhieuDat.getDonGia() * chiTietPhieuDat.getSoLuong() * soNgayDat);
         return response;
     }
 

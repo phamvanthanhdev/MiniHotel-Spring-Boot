@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.thongtin_hangphong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
@@ -37,13 +38,12 @@ public class ThongTinHangPhongController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ThongTinHangPhongResponse>> getAllHangPhong() throws Exception {
-        List<ThongTinHangPhong> thongTinHangPhongs = thongTinHangPhongService.getAllThongTinHangPhong();
-        List<ThongTinHangPhongResponse> responses = new ArrayList<>();
-        for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
-            responses.add(thongTinHangPhongService.convertThongTinHangPhongResponse(thongTinHangPhong));
-        }
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getAllHangPhong() throws Exception {
+        List<ThongTinHangPhongResponse> responses = thongTinHangPhongService.getThongTinHangPhongResponse();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/kiem-tra")

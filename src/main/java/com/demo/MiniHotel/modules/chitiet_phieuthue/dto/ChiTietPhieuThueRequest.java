@@ -13,4 +13,5 @@ public class ChiTietPhieuThueRequest {
     private LocalDate ngayDi;
     private Long donGia;
     private Boolean daThanhToan;
+    private Long tienGiamGia;
 }

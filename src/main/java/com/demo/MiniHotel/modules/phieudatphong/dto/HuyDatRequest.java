@@ -1,0 +1,15 @@
+package com.demo.MiniHotel.modules.phieudatphong.dto;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class HuyDatRequest {
+    int idPhieuDat;
+    long tienTra;
+}

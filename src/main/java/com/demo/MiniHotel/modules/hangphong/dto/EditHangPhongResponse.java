@@ -9,7 +9,6 @@ public class EditHangPhongResponse {
     private Integer id;
     private Integer idLoaiPhong;
     private Integer idKieuPhong;
-
     private String tenHangPhong;
     private String moTa;
     private String hinhAnh;

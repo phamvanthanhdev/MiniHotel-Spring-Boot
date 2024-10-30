@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.hangphong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.HangPhong;
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.hangphong.dto.EditHangPhongResponse;
@@ -8,6 +9,9 @@ import com.demo.MiniHotel.modules.hangphong.dto.HangPhongResponse;
 import com.demo.MiniHotel.modules.hangphong.service.IHangPhongService;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpStatus;
@@ -28,18 +32,22 @@ import java.util.List;
 public class HangPhongController {
     private final IHangPhongService hangPhongService;
     @PostMapping("/")
-    public ResponseEntity<HangPhongResponse> addNewHangPhong(
+    public ResponseEntity<ApiResponse> addNewHangPhong(
             @RequestParam("idLoaiPhong") Integer idLoaiPhong,
             @RequestParam("idKieuPhong") Integer idKieuPhong,
-            @RequestParam("tenHangPhong") String tenHangPhong,
+            @NotNull @NotBlank @RequestParam("tenHangPhong") String tenHangPhong,
             @RequestParam("moTa") String moTa,
+            @RequestParam("giaHangPhong") long giaHangPhong,
             @RequestParam("hinhAnh") MultipartFile hinhAnh
     ) throws Exception {
         HangPhong hangPhong = hangPhongService.addNewHangPhong(
-                idLoaiPhong, idKieuPhong, tenHangPhong,moTa, hinhAnh
+                idLoaiPhong, idKieuPhong, tenHangPhong,moTa, giaHangPhong, hinhAnh
         );
         HangPhongResponse response = convertHangPhongResponse(hangPhong);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
@@ -61,22 +69,27 @@ public class HangPhongController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EditHangPhongResponse> updateHangPhong(@PathVariable("id") Integer id,
+    public ResponseEntity<ApiResponse> updateHangPhong(@PathVariable("id") Integer id,
                                                      @RequestParam("idLoaiPhong") Integer idLoaiPhong,
                                                      @RequestParam("idKieuPhong") Integer idKieuPhong,
                                                      @RequestParam("tenHangPhong") String tenHangPhong,
                                                      @RequestParam("moTa") String moTa,
-                                                     @RequestParam("hinhAnh") MultipartFile hinhAnh) throws Exception {
+                                                     @RequestParam(value = "hinhAnh", required=false) MultipartFile hinhAnh) throws Exception {
         HangPhong hangPhong = hangPhongService.updateHangPhong(
                 idLoaiPhong, idKieuPhong, tenHangPhong,moTa, hinhAnh,id);
         EditHangPhongResponse response = convertEditHangPhongResponse(hangPhong);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteHangPhong(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteHangPhong(@PathVariable("id") Integer id) throws Exception {
         hangPhongService.deleteHangPhong(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 
     private HangPhongResponse convertHangPhongResponse(HangPhong hangPhong) throws Exception {

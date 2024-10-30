@@ -64,9 +64,9 @@ public class PhieuDatController {
         return new ResponseEntity<>(PhieuDatPhongs, HttpStatus.OK);
     }
 
-    @GetMapping("/ngay")
-    public ResponseEntity<List<PhieuDatThoiGianResponse>> getPhieuDatTheoNgay(@RequestParam("ngay")LocalDate ngay){
-        List<PhieuDatThoiGianResponse> responses = PhieuDatPhongService.getPhieuDatPhongTheoNgay(ngay);
+    @PostMapping("/ngay")
+    public ResponseEntity<List<PhieuDatThoiGianResponse>> getPhieuDatTheoNgay(@RequestBody PhieuDatTheoNgayRequest request){
+        List<PhieuDatThoiGianResponse> responses = PhieuDatPhongService.getPhieuDatPhongTheoNgay(request);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
@@ -135,13 +135,13 @@ public class PhieuDatController {
 //    }
 
     @PutMapping("/huy-dat")
-    public ResponseEntity<ResultResponse> huyDatPhong(@RequestParam("id") int id){
-        try {
-            PhieuDatPhongService.huyDatPhong(id);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new ResultResponse(400, e.getMessage()),HttpStatus.OK);
-        }
-        return new ResponseEntity<>(new ResultResponse(200, "Successfully"),HttpStatus.OK);
+    public ResponseEntity<ApiResponse> huyDatPhong(@RequestBody HuyDatRequest request) throws Exception {
+        PhieuDatPhong phieuDatPhong = PhieuDatPhongService.huyDatPhong(request);
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(phieuDatPhong)
+                .build(), HttpStatus.OK);
     }
 
     //Cập nhật thông tin ds khách hàng từ file excel

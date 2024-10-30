@@ -24,6 +24,7 @@ public class PhieuDatDetailsResponse {
     private String hoTen;
     private Integer idNhanVien;
     private Integer trangThaiHuy;
+    private Long tienTra;
     private Long tongTien;
     private List<ChiTietUserResponse> chiTietResponses;
 }

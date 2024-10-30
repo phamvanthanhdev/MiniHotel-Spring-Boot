@@ -44,7 +44,7 @@ public class SecurityConfig {
             "/api/khach-hang/tim-kiem-cccd",
             "/api/payment/payment-update",
             "/api/khach-hang/download",
-            "/api/kieu-phong/so-luong"
+            "/api/kieu-phong/so-luong",
 };
     @Value("${jwt.signerKey}")
     private String SIGNER_KEY;

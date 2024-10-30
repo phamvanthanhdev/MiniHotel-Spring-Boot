@@ -2,9 +2,11 @@ package com.demo.MiniHotel.modules.thongtin_phong.implement;
 
 import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
+import com.demo.MiniHotel.modules.hangphong.service.IHangPhongService;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.PhongTrongResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongHienTaiResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongResponse;
+import com.demo.MiniHotel.modules.thongtin_phong.dto.ThongTinPhongSapXepResponse;
 import com.demo.MiniHotel.modules.thongtin_phong.service.IThongTinPhongService;
 import com.demo.MiniHotel.repository.ChiTietPhieuThueRepository;
 import com.demo.MiniHotel.repository.ThongTinPhongHienTaiRepository;
@@ -27,6 +29,7 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
     private final ThongTinPhongRepository repository;
     private final ThongTinPhongHienTaiRepository phongHienTaiRepository;
     private final ChiTietPhieuThueRepository chiTietPhieuThueRepository;
+    private final IHangPhongService hangPhongService;
     @Autowired
     private EntityManager entityManager;
     @Override
@@ -93,6 +96,26 @@ public class ThongTinPhongImplement implements IThongTinPhongService {
                 boolean ketQuaThue = kiemTraPhongThue(ngayDenThue, ngayDiThue, phong.getMaPhong());
                 responses.add(convertThongTinPhongResponse(phong, ketQuaThue));
             }
+        }
+        return responses;
+    }
+
+    @Override
+    public List<ThongTinPhongSapXepResponse> getThongTinPhongHienTaiSapXep() {
+        List<ThongTinPhongHienTaiResponse> thongTinPhongHienTaiResponses = getThongTinPhongHienTai();
+        List<HangPhong> hangPhongs = hangPhongService.getAllHangPhong();
+        List<ThongTinPhongSapXepResponse> responses = new ArrayList<>();
+        for (HangPhong hangPhong: hangPhongs) {
+            List<ThongTinPhongHienTaiResponse> phongThuocHangPhongs = new ArrayList<>();
+            for (ThongTinPhongHienTaiResponse thongTinPhongHienTaiResponse: thongTinPhongHienTaiResponses) {
+                if(thongTinPhongHienTaiResponse.getIdHangPhong().equals(hangPhong.getIdHangPhong()))
+                    phongThuocHangPhongs.add(thongTinPhongHienTaiResponse);
+            }
+            responses.add(ThongTinPhongSapXepResponse.builder()
+                            .idHangPhong(hangPhong.getIdHangPhong())
+                            .tenHangPhong(hangPhong.getTenHangPhong())
+                            .thongTinPhongs(phongThuocHangPhongs)
+                    .build());
         }
         return responses;
     }

@@ -18,8 +18,10 @@ public class HoaDonNgay {
     @Id
     @Column(name = "so_hoa_don")
     private String soHoaDon;
-    @Column(name = "idnhan_vien", nullable = false)
-    private Integer idNhanVien;
+    @Column(name = "idphieu_thue", nullable = false)
+    private Integer idPhieuThue;
+    @Column(name = "ho_ten", nullable = false)
+    private String tenNhanVien;
     @Column(name = "tong_tien", nullable = false)
     private Long tongTien;
     @Column(name = "ngay_tao", nullable = false)

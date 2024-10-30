@@ -169,5 +169,16 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
         return chiTietPhuThus;
     }
 
+    @Override
+    public long getTongTienChiTietPhuThu(Integer idChiTietPhieuThue) throws Exception {
+        long tongTien = 0;
+        List<ChiTietPhuThu> chiTietPhuThus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
+        for (ChiTietPhuThu phuThu: chiTietPhuThus) {
+            if(!phuThu.getDaThanhToan())
+                tongTien += phuThu.getDonGia() * phuThu.getSoLuong();
+        }
+        return tongTien;
+    }
+
 
 }

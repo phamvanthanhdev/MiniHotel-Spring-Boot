@@ -22,10 +22,15 @@ public class DichVu {
     private Integer idDichVu;
     @Column(name = "ten_dich_vu", nullable = false)
     private String tenDichVu;
-    @Column(name = "don_gia", nullable = false)
-    private Long donGia;
+
+//    @Column(name = "don_gia", nullable = false)
+//    private Long donGia;
 
     @JsonIgnore
     @OneToMany(mappedBy = "dichVu")
     private List<ChiTietSuDungDichVu> chiTietSuDungDichVus;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "dichVu")
+    private List<ChiTietThayDoiGiaDichVu> chiTietThayDoiGiaDichVus;
 }

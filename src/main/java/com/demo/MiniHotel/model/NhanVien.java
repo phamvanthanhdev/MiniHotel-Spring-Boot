@@ -48,4 +48,20 @@ public class NhanVien {
     @JsonIgnore
     @OneToMany(mappedBy = "nhanVien")
     private List<HoaDon> hoaDons;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "nhanVien")
+    private List<ChuongTrinhKhuyenMai> chuongTrinhKhuyenMais;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "nhanVien")
+    private List<ChiTietThayDoiGiaPhong> chiTietThayDoiGiaPhongs;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "nhanVien")
+    private List<ChiTietThayDoiGiaDichVu> chiTietThayDoiGiaDichVus;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "nhanVien")
+    private List<ChiTietThayDoiGiaPhuThu> chiTietThayDoiGiaPhuThus;
 }

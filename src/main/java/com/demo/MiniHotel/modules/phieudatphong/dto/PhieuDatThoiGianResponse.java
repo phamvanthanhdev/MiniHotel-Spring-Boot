@@ -11,14 +11,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PhieuDatThoiGianResponse {
     private Integer idPhieuDat;
-    private LocalDate ngayBatDau;
+    private LocalDate ngayNhanPhong;
     private LocalDate ngayTraPhong;
-    private String ghiChu;
     private LocalDate ngayTao;
+    private long soNgay;
+    private String ghiChu;
     private Long tienTamUng;
-    private Integer idKhachHang;
+    private Long tongTien;
     private String tenKhachHang;
     private String cmnd;
-    private Integer idNhanVien;
-    private Integer trangThaiHuy;
+    private String sdt;
+    private int trangThai;
 }

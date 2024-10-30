@@ -23,6 +23,7 @@ public class ThongTinTraPhongResponse {
     String hoTenKhach;
     long tienTamUng;
     long tongTien;
+    long tongTienPhong;
     List<ChiTietPhieuThueResponse> chiTietPhieuThues;
     List<ChiTietSuDungDichVuResponse> chiTietDichVus;
     List<ChiTietPhuThuResponse> chiTietPhuThus;

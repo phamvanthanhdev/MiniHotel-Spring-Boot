@@ -34,6 +34,8 @@ public class HoaDon {
     private Long tongTien;
     @Column(name = "ngay_tao", nullable = false)
     private LocalDate ngayTao;
+    @Column(name = "phan_tram_giam", nullable = false)
+    private int phanTramGiam;
 
     @JsonIgnore
     @OneToMany(mappedBy = "hoaDon")
@@ -42,6 +44,10 @@ public class HoaDon {
     @JsonIgnore
     @OneToMany(mappedBy = "hoaDon")
     private List<ChiTietSuDungDichVu> chiTietSuDungDichVus;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "hoaDon")
+    private List<ChiTietPhuThu> chiTietPhuThus;
 
     //Thiếu: Chi tiết phụ thu
 }

@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.kieuphong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.KieuPhong;
 import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongRequest;
 import com.demo.MiniHotel.modules.kieuphong.dto.KieuPhongResponse;
@@ -24,9 +25,12 @@ public class KieuPhongController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<KieuPhong>> getAllKieuPhong(){
+    public ResponseEntity<ApiResponse> getAllKieuPhong(){
         List<KieuPhong> KieuPhongs = KieuPhongService.getAllKieuPhong();
-        return new ResponseEntity<>(KieuPhongs, HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(KieuPhongs)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

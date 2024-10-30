@@ -65,33 +65,36 @@ public class ChiTietPhieuThueController {
 
     //Thêm khách hàng vào chi tiết phiếu thuê
     @PostMapping("/add-khach-thue")
-    public ResponseEntity<ResultResponse> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request){
-//        ChiTietPhieuThue chiTietPhieuThue = null;
-        try {
-            chiTietPhieuThueService.addKhachHangToChiTietPhieuThue(request);
-            ResultResponse response = new ResultResponse(200, "Thêm khách lưu trú thành công!");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ResultResponse response = new ResultResponse(400, "Thêm khách lưu trú không thành công! Vui lòng thử lại");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<ApiResponse> addKhachHangToChiTietPhieuThue(@RequestBody ChiTietKhachThueRequest request) throws Exception {
+//        try {
+//            chiTietPhieuThueService.addKhachHangToChiTietPhieuThue(request);
+//            ResultResponse response = new ResultResponse(200, "Thêm khách lưu trú thành công!");
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } catch (Exception e) {
+//            ResultResponse response = new ResultResponse(400, "Thêm khách lưu trú không thành công! Vui lòng thử lại");
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+
+        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.addKhachHangToChiTietPhieuThue(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(chiTietPhieuThue)
+                .build(), HttpStatus.OK);
     }
 
     //Xóa khách hàng khỏi chi tiết phiếu thuê
     @DeleteMapping("/del-khach-thue")
-    public ResponseEntity<ResultResponse> removeKhachHangToChiTietPhieuThue(@RequestParam("idChiTietPhieuThue") int idChiTietPhieuThue,
+    public ResponseEntity<ApiResponse> removeKhachHangCuaChiTietPhieuThue(@RequestParam("idChiTietPhieuThue") int idChiTietPhieuThue,
                                                                             @RequestParam("idKhachThue") int idKhachThue) throws Exception {
         DelChiTietKhachThueRequest delChiTietKhachThueRequest = new DelChiTietKhachThueRequest();
         delChiTietKhachThueRequest.setIdChiTietPhieuThue(idChiTietPhieuThue);
         delChiTietKhachThueRequest.setIdKhachThue(idKhachThue);
-        try {
-            chiTietPhieuThueService.removeKhachHangInChiTietPhieuThue(delChiTietKhachThueRequest);
-            ResultResponse response = new ResultResponse(200, "Xóa khách lưu trú thành công!");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ResultResponse response = new ResultResponse(400, "Xóa khách lưu trú không thành công! Vui lòng thử lại");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+
+        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.removeKhachHangInChiTietPhieuThue(delChiTietKhachThueRequest);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(chiTietPhieuThue)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/khach-thue/hien-tai")
@@ -185,6 +188,18 @@ public class ChiTietPhieuThueController {
                                                                         @RequestParam("ngayTraPhong") LocalDate ngayTraPhong)
             throws Exception {
         ChiTietPhieuThueResponse response = chiTietPhieuThueService.thayDoiNgayTraPhong(id, ngayTraPhong);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    // Cập nhật số tiền giảm giá
+    @PutMapping("/thay-doi-tien-giam/{id}")
+    public ResponseEntity<ApiResponse> thayDoiTienGiamGia(@PathVariable("id") Integer id,
+                                                           @RequestParam("tienGiamGia") Long tienGiamGia)
+            throws Exception {
+        ChiTietPhieuThueResponse response = chiTietPhieuThueService.capNhatTienGiamGia(id, tienGiamGia);
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .result(response)

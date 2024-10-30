@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface HangPhongRepository extends JpaRepository<HangPhong, Integer> {
     Optional<HangPhong> findByIdHangPhong(Integer id);
     void deleteByIdHangPhong(Integer id);
+    boolean existsByTenHangPhong(String tenHangPhong);
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface IHangPhongService {
     public HangPhong addNewHangPhong(Integer idLoaiPhong, Integer idKieuPhong,
-                                     String tenHangPhong,String moTa,
+                                     String tenHangPhong,String moTa, long giaHangPhong,
                                       MultipartFile file) throws Exception;
     public List<HangPhong> getAllHangPhong();
     public HangPhong getHangPhongById(Integer id) throws Exception;

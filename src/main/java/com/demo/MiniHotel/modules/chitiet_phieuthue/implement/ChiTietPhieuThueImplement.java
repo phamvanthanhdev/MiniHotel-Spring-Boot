@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -62,6 +63,7 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         chiTietPhieuThue.setNgayDi(request.getNgayDi());
         chiTietPhieuThue.setDonGia(request.getDonGia());
         chiTietPhieuThue.setDaThanhToan(false);
+        chiTietPhieuThue.setTienGiamGia(request.getTienGiamGia());
 
         return repository.save(chiTietPhieuThue);
     }
@@ -95,19 +97,6 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         }
         ChiTietPhieuThue chiTietPhieuThue =  ChiTietPhieuThueOptional.get();
         return convertChiTietPhieuThueToResponse(chiTietPhieuThue);
-    }
-
-    private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) {
-        String tenHangPhong = chiTietPhieuThue.getPhong().getHangPhong().getTenHangPhong();
-        long ngay = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
-        int idHangPhong = chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong();
-        return new ChiTietPhieuThueResponse(chiTietPhieuThue.getIdChiTietPhieuThue(),
-                chiTietPhieuThue.getPhong().getMaPhong(), idHangPhong, tenHangPhong,
-                chiTietPhieuThue.getPhieuThuePhong().getIdPhieuThue(),
-                chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi(),
-                chiTietPhieuThue.getDonGia(),
-                chiTietPhieuThue.getDonGia() * ngay,
-                chiTietPhieuThue.getDaThanhToan());
     }
 
     @Override
@@ -162,13 +151,28 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     //Thêm danh sách khách hàng vào chi tiết phiếu thuê
     @Override
     public ChiTietPhieuThue addKhachHangToChiTietPhieuThue(ChiTietKhachThueRequest khachThueRequest) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(khachThueRequest.getIdChiTietPhieuThue());
+        List<KhachHang> khachHangList = chiTietPhieuThue.getKhachHangs();
+
+        // Lấy danh sách khách thuê hiện tại
+        List<ThongTinPhongHienTaiResponse> thongTinPhongHienTais = thongTinPhongService.getThongTinPhongHienTai();
+        List<KhachHang> khachHangDangThues = new ArrayList<>();
+        for (ThongTinPhongHienTaiResponse thongTinPhong:thongTinPhongHienTais) {
+            if(thongTinPhong.getIdChiTietPhieuThue() != null) {
+                List<KhachHang> khachHangs = getChiTietPhieuThueById(thongTinPhong.getIdChiTietPhieuThue()).getKhachHangs();
+                khachHangDangThues.addAll(khachHangs);
+            }
+        }
+
+        // Nếu khách hàng hiện tại đang lưu trú thì không cho thêm nữa
         List<KhachHang> khachHangs = new ArrayList<>();
         for (Integer idKhachHang: khachThueRequest.getIdKhachThues()) {
+            if(khachHangDangThues.contains(khachHangService.getKhachHangById(idKhachHang)))
+                throw new AppException(ErrorCode.KHACHHANG_DANGTHUE_EXISTED);
             khachHangs.add(khachHangService.getKhachHangById(idKhachHang));
         }
 
-        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(khachThueRequest.getIdChiTietPhieuThue());
-        List<KhachHang> khachHangList = chiTietPhieuThue.getKhachHangs();
+
         khachHangList.addAll(khachHangs);
         chiTietPhieuThue.setKhachHangs(khachHangList);
         return repository.save(chiTietPhieuThue);
@@ -195,7 +199,11 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
                 List<KhachHang> khachHangs = chiTietPhieuThue.getKhachHangs();
                 for (KhachHang khachHang:khachHangs) {
                     ChiTietKhachThueResponse khachThueResponse = new ChiTietKhachThueResponse(
-                            thongTinPhong.getMaPhong(), khachHang.getHoTen(), khachHang.getSdt(),
+                            chiTietPhieuThue.getIdChiTietPhieuThue(),
+                            khachHang.getIdKhachHang(),
+                            thongTinPhong.getMaPhong(), khachHang.getHoTen(),
+                            khachHang.getCmnd(),
+                            khachHang.getSdt(),
                             chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi()
                     );
                     chiTietKhachThueResponses.add(khachThueResponse);
@@ -236,24 +244,25 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     public HoaDonResponse traPhongKhachSan(Integer idNhanVien, Long tongTien,
                                            LocalDate ngayTao, Integer idChiTietPhieuThue) throws Exception {
 
-        //tao mot hoa don moi
-        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(tongTien);
-        String soHoaDon = hoaDonResponse.getSoHoaDon();
-        //them hoa don vao chi tiet phieu thue
-        themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
-        //dat da thanh toan = true
-        thanhToanChiTietPhieuThue(idChiTietPhieuThue);
-        //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
-        phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
-        // them hoa don vao chi tiet su dung dich vu
-        chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
-        return hoaDonResponse;
+//        //tao mot hoa don moi
+//        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(tongTien);
+//        String soHoaDon = hoaDonResponse.getSoHoaDon();
+//        //them hoa don vao chi tiet phieu thue
+//        themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
+//        //dat da thanh toan = true
+//        thanhToanChiTietPhieuThue(idChiTietPhieuThue);
+//        //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
+//        phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+//        // them hoa don vao chi tiet su dung dich vu
+//        chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+//        return hoaDonResponse;
+        return new HoaDonResponse();
     }
 
     @Override
     public HoaDonResponse traPhongKhachSanKhachDoan(TraPhongRequest request) throws Exception {
         //tao mot hoa don moi
-        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu());
+        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu(), request.getIdPhieuThue(), request.getPhanTramGiam());
         String soHoaDon = hoaDonResponse.getSoHoaDon();
         for (int idChiTietPhieuThue: request.getIdChiTietPhieuThues()) {
             //them hoa don vao chi tiet phieu thue
@@ -274,7 +283,7 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         Phong phong = phongService.getPhongById(maPhong);
         if(thongTinHangPhongService.kiemTraPhongHangPhongTrong(phong.getHangPhong().getIdHangPhong(),chiTietPhieuThue.getNgayDen(),
                 chiTietPhieuThue.getNgayDi(), 1)){
-            if(phong.getHangPhong().getIdHangPhong() == chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong()) {
+            if(Objects.equals(phong.getHangPhong().getIdHangPhong(), chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong())) {
                 chiTietPhieuThue.setPhong(phong);
                 repository.save(chiTietPhieuThue);
                 return true;
@@ -303,6 +312,18 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         chiTietPhieuThue.setNgayDi(request.getNgayDi());
         chiTietPhieuThue.setDonGia(request.getDonGia());
         chiTietPhieuThue.setDaThanhToan(false);
+
+        long soNgayThue;
+        if(request.getNgayDen().equals(request.getNgayDi()))
+            soNgayThue = 1;
+        else
+            soNgayThue = ChronoUnit.DAYS.between(request.getNgayDen(), request.getNgayDi());
+
+        long giaPhong = request.getDonGia() * soNgayThue;
+        if(request.getTienGiamGia() > giaPhong)
+            throw new AppException(ErrorCode.TIENGIAMGIA_NOT_VALID);
+
+        chiTietPhieuThue.setTienGiamGia(request.getTienGiamGia());
 
         return repository.save(chiTietPhieuThue);
     }
@@ -355,5 +376,57 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         chiTietPhieuThue.setDaThanhToan(true);
 
         return repository.save(chiTietPhieuThue);
+    }
+
+    @Override
+    public ChiTietPhieuThueResponse capNhatNgayTraPhong(Integer id, LocalDate ngayTraPhong) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(id);
+        chiTietPhieuThue.setNgayDi(ngayTraPhong);
+        return convertChiTietPhieuThueToResponse(repository.save(chiTietPhieuThue));
+    }
+
+    @Override
+    public ChiTietPhieuThueResponse capNhatTienGiamGia(Integer id, long tienGiamGia) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(id);
+        if(chiTietPhieuThue.getDaThanhToan()){
+            throw new AppException(ErrorCode.CHITIET_SUCCESS);
+        }
+
+        long soNgayThue = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
+        if(tienGiamGia > chiTietPhieuThue.getDonGia() * soNgayThue)
+            throw new AppException(ErrorCode.TIENGIAMGIA_NOT_VALID);
+
+        chiTietPhieuThue.setTienGiamGia(tienGiamGia);
+
+        return convertChiTietPhieuThueToResponse(repository.save(chiTietPhieuThue));
+    }
+
+    private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) throws Exception {
+        String tenHangPhong = chiTietPhieuThue.getPhong().getHangPhong().getTenHangPhong();
+        long ngay;
+        //Nếu ngày đến và ngày trả phòng là cùng một ngày => tính 1 ngày
+        if(chiTietPhieuThue.getNgayDen().equals(chiTietPhieuThue.getNgayDi()))
+            ngay = 1;
+        else
+            ngay = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
+
+        long tongTienPhong = chiTietPhieuThue.getDonGia() * ngay - chiTietPhieuThue.getTienGiamGia();
+        if(tongTienPhong < 0) tongTienPhong = 0;
+        long tongTienDichVu = chiTietSuDungDichVuService.getTongTienChiTietSuDungDichVu(chiTietPhieuThue.getIdChiTietPhieuThue());
+        long tongTienPhuThu = phuThuService.getTongTienChiTietPhuThu(chiTietPhieuThue.getIdChiTietPhieuThue());
+        long tongTienTatCa = chiTietPhieuThue.getDonGia() * ngay + tongTienDichVu + tongTienPhuThu - chiTietPhieuThue.getTienGiamGia();
+
+        int idHangPhong = chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong();
+        return new ChiTietPhieuThueResponse(chiTietPhieuThue.getIdChiTietPhieuThue(),
+                chiTietPhieuThue.getPhong().getMaPhong(), idHangPhong, tenHangPhong,
+                chiTietPhieuThue.getPhieuThuePhong().getIdPhieuThue(),
+                chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi(),
+                chiTietPhieuThue.getDonGia(),
+                chiTietPhieuThue.getDaThanhToan(),
+                chiTietPhieuThue.getTienGiamGia(),
+                tongTienPhong,
+                tongTienDichVu,
+                tongTienPhuThu,
+                tongTienTatCa);
     }
 }

@@ -67,9 +67,21 @@
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>9.30.1</version>
 		</dependency>
+		<!-- excel -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.12</version>
+		</dependency>
+		<!-- excel 2007 over-->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.12</version>
 		</dependency>
 	</dependencies>
 

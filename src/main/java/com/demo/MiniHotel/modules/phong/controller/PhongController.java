@@ -1,8 +1,11 @@
 package com.demo.MiniHotel.modules.phong.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.Phong;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phong.dto.PhongRequest;
+import com.demo.MiniHotel.modules.phong.dto.PhongResponse;
+import com.demo.MiniHotel.modules.phong.dto.ThemPhongResponse;
 import com.demo.MiniHotel.modules.phong.service.IPhongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,28 +22,40 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 public class PhongController {
     private final IPhongService PhongService;
     @PostMapping("/")
-    public ResponseEntity<Phong> addNewPhong(@RequestBody PhongRequest request) throws Exception {
-        Phong Phong = PhongService.addNewPhong(request);
-        return new ResponseEntity<>(Phong, HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse> addNewPhong(@RequestBody PhongRequest request) throws Exception {
+        Phong phong = PhongService.addNewPhong(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(phong)
+                .build(), HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Phong>> getAllPhong(){
-        List<Phong> Phongs = PhongService.getAllPhong();
-        return new ResponseEntity<>(Phongs, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getAllPhong() throws Exception {
+        List<PhongResponse> responses = PhongService.getPhongResponses();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Phong> getPhongById(@PathVariable("id") String id) throws Exception {
-        Phong Phong = PhongService.getPhongById(id);
-        return new ResponseEntity<>(Phong, HttpStatus.OK);
+    @GetMapping("/{maPhong}")
+    public ResponseEntity<ApiResponse> getPhongResponseById(@PathVariable("maPhong") String maPhong) throws Exception {
+        ThemPhongResponse response = PhongService.getPhongResponseById(maPhong);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Phong> updatePhong(@PathVariable("id") String id,
+    public ResponseEntity<ApiResponse> updatePhong(@PathVariable("id") String id,
                                                    @RequestBody PhongRequest request) throws Exception {
-        Phong Phong = PhongService.updatePhong(request,id);
-        return new ResponseEntity<>(Phong, HttpStatus.OK);
+        ThemPhongResponse response = PhongService.updatePhong(request,id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,13 +64,14 @@ public class PhongController {
         return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
     }
 
-    @PostMapping("/trang-thai")
-    public ResponseEntity<ResultResponse> capNhatTrangThaiPhong(@RequestParam("idTrangThai") int idTrangThai,
-                                                                @RequestParam("maPhong") String maPhong) throws Exception {
-        PhongService.capNhatTrangThai(maPhong, idTrangThai);
-        ResultResponse response = new ResultResponse(
-                200, "Cập nhật trạng thái phòng thành công!"
-        );
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @PutMapping("/trang-thai")
+    public ResponseEntity<ApiResponse> capNhatTrangThaiPhong(@RequestParam("idTrangThai") int idTrangThai,
+                                                             @RequestParam("maPhong") String maPhong) throws Exception {
+        Phong phong = PhongService.capNhatTrangThai(maPhong, idTrangThai);
+
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(phong)
+                .build(), HttpStatus.OK);
     }
 }

@@ -15,7 +15,7 @@ public interface IChiTietPhieuDatService {
     public void addListChiTietPhieuDat(List<ChiTietPhieuDatRequest> requests) throws Exception;
     public List<ChiTietPhieuDat> getAllChiTietPhieuDat();
     public ChiTietPhieuDatResponse getChiTietPhieuDatById(IdChiTietPhieuDatEmb id) throws Exception;
-    public ChiTietUserResponse convertChiTietUserResponse(ChiTietPhieuDat chiTietPhieuDat) throws Exception;
+    public ChiTietUserResponse convertChiTietUserResponse(ChiTietPhieuDat chiTietPhieuDat, long soNgayDat) throws Exception;
     public List<ChiTietPhieuDat> getChiTietPhieuDatByIdPhieuDat(Integer idPhieuDat) throws Exception;
     public ChiTietPhieuDat updateSoLuong(ChiTietPhieuDatRequest request, IdChiTietPhieuDatEmb id) throws Exception;
     public void deleteChiTietPhieuDat(IdChiTietPhieuDatEmb id) throws Exception;

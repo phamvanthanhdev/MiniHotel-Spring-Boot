@@ -5,6 +5,7 @@ import com.demo.MiniHotel.model.ChiTietThayDoiGiaDichVu;
 import com.demo.MiniHotel.model.DichVu;
 import com.demo.MiniHotel.model.ThongTinDichVu;
 import com.demo.MiniHotel.model.ThongTinPhuThu;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
 import com.demo.MiniHotel.modules.dichvu.dto.ChiTietGiaDichVuRequest;
 import com.demo.MiniHotel.modules.dichvu.dto.ChiTietGiaDichVuResponse;
 import com.demo.MiniHotel.modules.dichvu.dto.DichVuRequest;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DichVuController {
     private final IDichVuService DichVuService;
+    private final IChiTietSuDungDichVuService chiTietSuDungDichVuService;
     @PostMapping("/")
     public ResponseEntity<ApiResponse> addNewDichVu(@RequestBody DichVuRequest request) throws Exception {
         DichVuResponse response = DichVuService.addNewDichVu(request);
@@ -125,5 +127,14 @@ public class DichVuController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .build(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/chi-tiet/phieu-thue")
+    public ResponseEntity<ApiResponse> getChiTietSuDungDichVuByIdPhieuThue(@RequestParam int idPhieuThue){
+        var response = chiTietSuDungDichVuService.getChiTietDichVuCuaPhieuThue(idPhieuThue);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 }

@@ -2,9 +2,11 @@ package com.demo.MiniHotel.modules.chitiet_phuthu.implement;
 
 import com.demo.MiniHotel.embedded.IdChiTietPhuThuEmb;
 import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuPhongResponse;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
 import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietDichVuPhongResponse;
 import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
 import com.demo.MiniHotel.repository.ChiTietPhieuThueRepository;
 import com.demo.MiniHotel.repository.ChiTietPhuThuRepository;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -178,6 +181,26 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
                 tongTien += phuThu.getDonGia() * phuThu.getSoLuong();
         }
         return tongTien;
+    }
+
+    @Override
+    public List<ChiTietPhuThuPhongResponse> getChiTietPhuThuCuaPhieuThue(int idPhieuThue) {
+        List<ChiTietPhuThu> chiTietPhuThus = repository.findByChiTietPhieuThue_PhieuThuePhong_IdPhieuThue(idPhieuThue);
+        return chiTietPhuThus.stream().map(this::convertChiTietPhuThuPhongToResponse).collect(Collectors.toList());
+    }
+
+    private ChiTietPhuThuPhongResponse convertChiTietPhuThuPhongToResponse(ChiTietPhuThu chiTietPhuThu) {
+        ChiTietPhieuThue chiTietPhieuThue = chiTietPhuThu.getChiTietPhieuThue();
+        return ChiTietPhuThuPhongResponse.builder()
+                .idChiTietPhieuThue(chiTietPhieuThue.getIdChiTietPhieuThue())
+                .idPhuThu(chiTietPhuThu.getPhuThu().getIdPhuThu())
+                .noiDung(chiTietPhuThu.getPhuThu().getNoiDung())
+                .maPhong(chiTietPhieuThue.getPhong().getMaPhong())
+                .soLuong(chiTietPhuThu.getSoLuong())
+                .ngayTao(chiTietPhuThu.getNgayTao())
+                .donGia(chiTietPhuThu.getDonGia())
+                .daThanhToan(chiTietPhuThu.getDaThanhToan())
+                .build();
     }
 
 

@@ -3,6 +3,7 @@ package com.demo.MiniHotel.modules.chitiet_sudung_dichvu.implement;
 import com.demo.MiniHotel.embedded.IdChiTietSuDungDichVuEmb;
 import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietDichVuPhongResponse;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuResponse;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,14 +82,7 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         return responses;
     }
 
-    private ChiTietSuDungDichVuResponse convertChiTietSuDungDichVuToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
-        return new ChiTietSuDungDichVuResponse(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdChiTietPhieuThue(),
-                chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
-                chiTietSuDungDichVu.getDichVu().getTenDichVu(),
-                chiTietSuDungDichVu.getSoLuong(),
-                chiTietSuDungDichVu.getNgayTao(),
-                chiTietSuDungDichVu.getDonGia(), chiTietSuDungDichVu.getDaThanhToan());
-    }
+
 
     @Override
     public ChiTietSuDungDichVu updateChiTietDichVu(ChiTietSuDungDichVuRequest request) throws Exception {
@@ -177,5 +172,35 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
                 tongTien += dichVu.getDonGia() * dichVu.getSoLuong();
         }
         return tongTien;
+    }
+
+    @Override
+    public List<ChiTietDichVuPhongResponse> getChiTietDichVuCuaPhieuThue(int idPhieuThue) {
+        List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_PhieuThuePhong_IdPhieuThue(idPhieuThue);
+        return chiTietSuDungDichVus.stream().map(this::convertChiTietDichVuPhongToResponse).collect(Collectors.toList());
+    }
+
+    private ChiTietDichVuPhongResponse convertChiTietDichVuPhongToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
+        ChiTietPhieuThue chiTietPhieuThue = chiTietSuDungDichVu.getChiTietPhieuThue();
+        return ChiTietDichVuPhongResponse.builder()
+                .idChiTietPhieuThue(chiTietPhieuThue.getIdChiTietPhieuThue())
+                .idDichVu(chiTietSuDungDichVu.getDichVu().getIdDichVu())
+                .tenDichVu(chiTietSuDungDichVu.getDichVu().getTenDichVu())
+                .maPhong(chiTietPhieuThue.getPhong().getMaPhong())
+                .soLuong(chiTietSuDungDichVu.getSoLuong())
+                .ngayTao(chiTietSuDungDichVu.getNgayTao())
+                .donGia(chiTietSuDungDichVu.getDonGia())
+                .daThanhToan(chiTietSuDungDichVu.getDaThanhToan())
+                .build();
+    }
+
+
+    private ChiTietSuDungDichVuResponse convertChiTietSuDungDichVuToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
+        return new ChiTietSuDungDichVuResponse(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdChiTietPhieuThue(),
+                chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
+                chiTietSuDungDichVu.getDichVu().getTenDichVu(),
+                chiTietSuDungDichVu.getSoLuong(),
+                chiTietSuDungDichVu.getNgayTao(),
+                chiTietSuDungDichVu.getDonGia(), chiTietSuDungDichVu.getDaThanhToan());
     }
 }

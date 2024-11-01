@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface ChiTietPhuThuRepository extends JpaRepository<ChiTietPhuThu, IdChiTietPhuThuEmb> {
     List<ChiTietPhuThu> findByChiTietPhieuThue_IdChiTietPhieuThue(Integer idChiTietPhieuThue);
+    List<ChiTietPhuThu> findByChiTietPhieuThue_PhieuThuePhong_IdPhieuThue(Integer idPhieuThue);
 }

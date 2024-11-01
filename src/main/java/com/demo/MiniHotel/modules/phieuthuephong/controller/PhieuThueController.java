@@ -5,6 +5,7 @@ import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.model.PhieuThuePhong;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongResponse;
+import com.demo.MiniHotel.modules.phieudatphong.dto.QuanLyPhieuDatResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.*;
@@ -80,9 +81,11 @@ public class PhieuThueController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePhieuThuePhong(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deletePhieuThuePhong(@PathVariable("id") Integer id) throws Exception {
         PhieuThuePhongService.deletePhieuThuePhong(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 
     //Kiểm tra số lượng phòng trả được chọn có phải là tất cả phòng trong phiếu thuê
@@ -113,5 +116,38 @@ public class PhieuThueController {
                 .build(), HttpStatus.OK);
     }
 
+    @PutMapping("/phan-tram-giam")
+    public ResponseEntity<ApiResponse> capNhatPhanTramGiam(@RequestParam int idPhieuThue,
+                                                           @RequestParam int phanTramGiam) throws Exception {
+        PhieuThueResponse response = PhieuThuePhongService.capNhatPhanTramGiam(idPhieuThue, phanTramGiam);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
 
+    @GetMapping("/theo-trang")
+    public ResponseEntity<ApiResponse> getPhieuThuePhongTheoTrang(@RequestParam("pageNumber") int pageNumber,
+                                                                 @RequestParam("pageSize") int pageSize) throws Exception {
+        List<PhieuThueResponse> responses = PhieuThuePhongService.getPhieuThuePhongTheoTrang(pageNumber, pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/tong-trang")
+    public ResponseEntity<ApiResponse> getTongTrangPhieuThuePhong(@RequestParam("pageSize") int pageSize) throws Exception {
+        int tongTrang = PhieuThuePhongService.getTongTrangPhieuThuePhong(pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(tongTrang)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/cap-nhat/{id}") // Xem lại chi tiết phiếu thuê
+    public ResponseEntity<PhieuThueResponse> getCapNhatPhieuThuePhongResponseById(@PathVariable("id") Integer id) throws Exception {
+        PhieuThueResponse response = PhieuThuePhongService.getCapNhatPhieuThuePhongResonseById(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

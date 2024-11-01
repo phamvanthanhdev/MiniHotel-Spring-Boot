@@ -20,7 +20,7 @@ public interface IHoaDonService {
     public List<ChiTietPhieuThue> getChiTietPhieuThueBySoHoaDon(String soHoaDon) throws Exception;
     public List<ChiTietSuDungDichVu> getChiTietSuDungDichVuBySoHoaDon(String soHoaDon) throws Exception;
 
-    HoaDonResponse themHoaDonMoi(Long tongTien, int idPhieuThue, int phanTramGiam) throws Exception;
+    HoaDonResponse themHoaDonMoi(Long tongTien, int idPhieuThue) throws Exception;
 
     List<HoaDonNgay> getHoaDonNgaysHienTai();
     List<HoaDonNgay> getHoaDonNgaysTheoNgay(LocalDate ngay);

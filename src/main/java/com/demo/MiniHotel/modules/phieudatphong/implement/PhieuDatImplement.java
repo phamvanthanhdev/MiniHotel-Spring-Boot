@@ -15,6 +15,7 @@ import com.demo.MiniHotel.modules.phieudatphong.dto.*;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
 import com.demo.MiniHotel.modules.phieudatphong.service.IPhieuDatService;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
+import com.demo.MiniHotel.repository.PhieuDatPhongPagingRepository;
 import com.demo.MiniHotel.repository.PhieuDatPhongRepository;
 import com.demo.MiniHotel.modules.nhanvien.service.INhanVienService;
 import com.demo.MiniHotel.repository.TaiKhoanRepository;
@@ -25,6 +26,10 @@ import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,6 +48,7 @@ public class PhieuDatImplement implements IPhieuDatService {
     private final IChiTietPhieuDatService chiTietPhieuDatService;
     private final IThongTinHangPhongService thongTinHangPhongService;
     private final TaiKhoanRepository taiKhoanRepository;
+    private final PhieuDatPhongPagingRepository phieuDatPhongPagingRepository;
 
     @Override
     public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception {
@@ -379,6 +385,36 @@ public class PhieuDatImplement implements IPhieuDatService {
     }
 
 
+    @Override
+    public List<QuanLyPhieuDatResponse> getPhieuDatPhongTheoTrang(int pageNumber, int pageSize) throws Exception {
+        Pageable firstPageWithTwoElements = PageRequest.of(pageNumber, pageSize, Sort.by("ngayBatDau").descending());
+        Page<PhieuDatPhong> allProducts = phieuDatPhongPagingRepository.findAll(firstPageWithTwoElements);
+        List<PhieuDatPhong> phieuDatPhongs = allProducts.stream().toList();
+
+        List<QuanLyPhieuDatResponse> responses = new ArrayList<>();
+        for (PhieuDatPhong phieuDat:phieuDatPhongs) {
+            long tongTien = 0;
+            for (ChiTietPhieuDat chiTiet:phieuDat.getChiTietPhieuDats()) {
+                tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+            }
+            long soNgayThue = ChronoUnit.DAYS.between(phieuDat.getNgayBatDau(), phieuDat.getNgayTraPhong());
+            responses.add(getQuanLyPhieuDatResponse(phieuDat, tongTien * soNgayThue));
+        }
+
+        return responses;
+    }
+
+    @Override
+    public Integer getTongTrangPhieuDatPhong(int pageSize){
+        int tongPhieuDat = repository.findAll().size();
+        int tongTrang = tongPhieuDat / pageSize;
+        if(tongPhieuDat % pageSize != 0)
+            tongTrang += 1;
+
+        return tongTrang;
+    }
+
+
     public PhieuDatResponse getPhieuDatResponse(PhieuDatPhong phieuDatPhong) throws Exception {
         return new PhieuDatResponse(
                 phieuDatPhong.getIdPhieuDat(),
@@ -408,6 +444,22 @@ public class PhieuDatImplement implements IPhieuDatService {
                 phieuDatPhong.getTrangThaiHuy(),
                 tongTien
         );
+    }
+
+    public QuanLyPhieuDatResponse getQuanLyPhieuDatResponse(PhieuDatPhong phieuDatPhong, long tongTien) throws Exception {
+        return QuanLyPhieuDatResponse.builder()
+                .idPhieuDat(phieuDatPhong.getIdPhieuDat())
+                .ngayBatDau(phieuDatPhong.getNgayBatDau())
+                .ngayTraPhong(phieuDatPhong.getNgayTraPhong())
+                .ngayTao(phieuDatPhong.getNgayTao())
+                .idKhachHang(phieuDatPhong.getKhachHang().getIdKhachHang())
+                .tenKhachHang(phieuDatPhong.getKhachHang().getHoTen())
+                .idNhanVien(null)
+                .tienTamUng(phieuDatPhong.getTienTamUng())
+                .tongTien(tongTien)
+                .tienTra(phieuDatPhong.getTienTraLai())
+                .trangThaiHuy(phieuDatPhong.getTrangThaiHuy())
+                .build();
     }
 
     public PhieuDatDetailsResponse getPhieuDatDetailsResponse(PhieuDatPhong phieuDatPhong, long tongTien) throws Exception {

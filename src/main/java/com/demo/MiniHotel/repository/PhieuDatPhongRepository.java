@@ -3,6 +3,7 @@ package com.demo.MiniHotel.repository;
 import com.demo.MiniHotel.model.PhieuDatPhong;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 

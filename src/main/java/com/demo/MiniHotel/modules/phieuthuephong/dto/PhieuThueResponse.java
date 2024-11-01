@@ -23,5 +23,15 @@ public class PhieuThueResponse {
     private Integer idNhanVien;
     private String tenNhanVien;
     private Integer idPhieuDat;
+
+
     private Long tienTamUng;
+    private long tongTien;
+    private long tongTienPhong;
+    private long tongTienDichVu;
+    private long tongTienPhuThu;
+    private long tienDuocGiam;
+    private long tienPhaiTra;
+
+    private int phanTramGiam;
 }

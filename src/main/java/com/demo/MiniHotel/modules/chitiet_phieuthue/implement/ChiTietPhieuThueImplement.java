@@ -3,18 +3,13 @@ package com.demo.MiniHotel.modules.chitiet_phieuthue.implement;
 import com.demo.MiniHotel.exception.AppException;
 import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.*;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
 import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
-import com.demo.MiniHotel.modules.hangphong.service.IHangPhongService;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
 import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
-import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.DelChiTietKhachThueRequest;
 import com.demo.MiniHotel.modules.phong.service.IPhongService;
@@ -24,16 +19,19 @@ import com.demo.MiniHotel.modules.thongtin_phong.service.IThongTinPhongService;
 import com.demo.MiniHotel.repository.ChiTietPhieuThueRepository;
 import com.demo.MiniHotel.repository.HoaDonRepository;
 import com.demo.MiniHotel.repository.PhieuThuePhongRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +47,8 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     private final IChiTietSuDungDichVuService chiTietSuDungDichVuService;
     private final IThongTinHangPhongService thongTinHangPhongService;
     private final IThongTinPhongService thongTinPhongService;
+    @Autowired
+    private EntityManager entityManager;
     @Override
     public ChiTietPhieuThue addNewChiTietPhieuThue(ChiTietPhieuThueRequest request) throws Exception {
         ChiTietPhieuThue chiTietPhieuThue = new ChiTietPhieuThue();
@@ -262,19 +262,19 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     @Override
     public HoaDonResponse traPhongKhachSanKhachDoan(TraPhongRequest request) throws Exception {
         //tao mot hoa don moi
-        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu(), request.getIdPhieuThue(), request.getPhanTramGiam());
-        String soHoaDon = hoaDonResponse.getSoHoaDon();
-        for (int idChiTietPhieuThue: request.getIdChiTietPhieuThues()) {
-            //them hoa don vao chi tiet phieu thue
-            themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
-            //dat da thanh toan = true
-            thanhToanChiTietPhieuThue(idChiTietPhieuThue);
-            //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
-            phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
-            // them hoa don vao chi tiet su dung dich vu
-            chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
-        }
-        return hoaDonResponse;
+//        HoaDonResponse hoaDonResponse = hoaDonService.themHoaDonMoi(request.getThucThu(), request.getIdPhieuThue());
+//        String soHoaDon = hoaDonResponse.getSoHoaDon();
+//        for (int idChiTietPhieuThue: request.getIdChiTietPhieuThues()) {
+//            //them hoa don vao chi tiet phieu thue
+//            themHoaDonToChiTietPhieuThue(idChiTietPhieuThue, hoaDonResponse.getSoHoaDon());
+//            //dat da thanh toan = true
+//            thanhToanChiTietPhieuThue(idChiTietPhieuThue);
+//            //them hoa don vao chi tiet phu thu và chuyển da thanh toan = true
+//            phuThuService.thanhToanChiTietPhuThuCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+//            // them hoa don vao chi tiet su dung dich vu
+//            chiTietSuDungDichVuService.thanhToanChiTietSuDungDVCuaChiTietPhieuThue(idChiTietPhieuThue, soHoaDon);
+//        }
+        return new HoaDonResponse();
     }
 
     @Override
@@ -399,6 +399,103 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         chiTietPhieuThue.setTienGiamGia(tienGiamGia);
 
         return convertChiTietPhieuThueToResponse(repository.save(chiTietPhieuThue));
+    }
+
+    @Override
+    public List<ThongKeTanSuatResponse> thongKeTanSuat(LocalDate ngayBatDau, LocalDate ngayKetThuc) throws Exception {
+        List<TanSuatThuePhongResponse> tanSuatThuePhongRespons = new ArrayList<>();
+
+        LocalDate currentDate = ngayBatDau;
+        while (!currentDate.isAfter(ngayKetThuc)) {
+            entityManager.clear();
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("KiemTraPhongDaThueTheoNgay", PhongDaThue.class)
+                    .registerStoredProcedureParameter("ngay", LocalDate.class, ParameterMode.IN)
+                    .setParameter("ngay", currentDate);
+            List<PhongDaThue> phongDaThues = query.getResultList();
+
+            if(tanSuatThuePhongRespons.size() == 0){
+                for (PhongDaThue phongDaThue: phongDaThues) {
+                    tanSuatThuePhongRespons.add(TanSuatThuePhongResponse.builder()
+                            .maPhong(phongDaThue.getMaPhong())
+                            .idHangPhong(phongDaThue.getIdHangPhong())
+                            .tanSuat(phongDaThue.getDaThue() ? 1 : 0)
+                            .build());
+                }
+            } else{
+                for (TanSuatThuePhongResponse tanSuatThuePhongResponse : tanSuatThuePhongRespons) {
+                    for (PhongDaThue phongDaThue: phongDaThues) {
+                        if (phongDaThue.getMaPhong().equals(tanSuatThuePhongResponse.getMaPhong())
+                                && phongDaThue.getDaThue()) {
+                            tanSuatThuePhongResponse.setTanSuat(tanSuatThuePhongResponse.getTanSuat() + 1);
+                        }
+                    }
+                }
+            }
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        List<ThongKeTanSuatResponse> thongKeTanSuatResponses = new ArrayList<>();
+        // Vì hạng phòng đã được sắp xếp
+        int tanSuatHangPhong = 0;
+        int index = 0;
+        int tongTanSuatHangPhong = 0;
+        long soNgayThongKe = ChronoUnit.DAYS.between(ngayBatDau, ngayKetThuc);
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.HALF_EVEN);
+        for (int i = 0; i < tanSuatThuePhongRespons.size(); i++) {
+            tanSuatHangPhong += tanSuatThuePhongRespons.get(i).getTanSuat(); // Tính tần suất
+            tongTanSuatHangPhong += tanSuatThuePhongRespons.get(i).getTanSuat(); // Tổng tần suất tất cả
+            if(i == tanSuatThuePhongRespons.size() - 1){ // Trường hợp phân tử cuối cùng trong danh sách
+                ThongTinHangPhong thongTinHangPhong = thongTinHangPhongService
+                        .getThongTinHangPhongById(tanSuatThuePhongRespons.get(i).getIdHangPhong());
+                // Thêm tỉ lệ của từng phòng
+                for (int j = index; j < i+1; j++) {
+                    double tiLePhong = 0;
+                    if(tanSuatHangPhong > 0)
+                        tiLePhong = (double) tanSuatThuePhongRespons.get(j).getTanSuat() / tanSuatHangPhong * 100;
+                    tanSuatThuePhongRespons.get(j).setTiLe(df.format(tiLePhong));
+                }
+
+                // Thêm thống kê tần suất
+                thongKeTanSuatResponses.add(ThongKeTanSuatResponse.builder()
+                        .idHangPhong(tanSuatThuePhongRespons.get(i).getIdHangPhong())
+                        .tenHangPhong(thongTinHangPhong.getTenHangPhong())
+                        .tanSuat(tanSuatHangPhong)
+                        .tanSuatThuePhongs(tanSuatThuePhongRespons.subList(index, i + 1))
+                        .build());
+            }else{
+                if(tanSuatThuePhongRespons.get(i).getIdHangPhong() != tanSuatThuePhongRespons.get(i+1).getIdHangPhong()){
+                    ThongTinHangPhong thongTinHangPhong = thongTinHangPhongService
+                            .getThongTinHangPhongById(tanSuatThuePhongRespons.get(i).getIdHangPhong());
+
+                    // Thêm tỉ lệ của từng phòng
+                    for (int j = index; j < i+1; j++) {
+                        double tiLePhong = 0;
+                        if(tanSuatHangPhong > 0)
+                            tiLePhong = (double) tanSuatThuePhongRespons.get(j).getTanSuat() / tanSuatHangPhong * 100;
+                        tanSuatThuePhongRespons.get(j).setTiLe(df.format(tiLePhong));
+                    }
+
+                    thongKeTanSuatResponses.add(ThongKeTanSuatResponse.builder()
+                            .idHangPhong(tanSuatThuePhongRespons.get(i).getIdHangPhong())
+                            .tenHangPhong(thongTinHangPhong.getTenHangPhong())
+                            .tanSuat(tanSuatHangPhong)
+                            .tanSuatThuePhongs(tanSuatThuePhongRespons.subList(index, i + 1))
+                            .build());
+                    tanSuatHangPhong = 0;
+                    index = i + 1;
+                }
+            }
+        }
+
+        for (ThongKeTanSuatResponse response: thongKeTanSuatResponses) {
+            double tiLeHangPhong = (double) response.getTanSuat() / tongTanSuatHangPhong * 100;
+            response.setTiLe(df.format(tiLeHangPhong));
+        }
+
+
+        return thongKeTanSuatResponses;
     }
 
     private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) throws Exception {

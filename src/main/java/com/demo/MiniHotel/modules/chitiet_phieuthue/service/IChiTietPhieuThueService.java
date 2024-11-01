@@ -3,14 +3,8 @@ package com.demo.MiniHotel.modules.chitiet_phieuthue.service;
 
 import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.model.HoaDon;
-import com.demo.MiniHotel.model.KhachHang;
-import com.demo.MiniHotel.model.PhieuThuePhong;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.*;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonResponse;
-import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.ChiTietKhachThueRequest;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.DelChiTietKhachThueRequest;
 
@@ -47,4 +41,6 @@ public interface IChiTietPhieuThueService {
     ChiTietPhieuThue themHoaDonToChiTietPhieuThue(Integer id, String soHoaDon) throws Exception;
     ChiTietPhieuThueResponse capNhatNgayTraPhong(Integer id, LocalDate ngayTraPhong) throws Exception;
     ChiTietPhieuThueResponse capNhatTienGiamGia(Integer id, long tienGiamGia) throws Exception;
+
+    List<ThongKeTanSuatResponse> thongKeTanSuat(LocalDate ngayBatDau, LocalDate ngayKetThuc) throws Exception;
 }

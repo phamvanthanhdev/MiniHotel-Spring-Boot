@@ -4,6 +4,7 @@ import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.model.PhieuThuePhong;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongResponse;
+import com.demo.MiniHotel.modules.phieudatphong.dto.QuanLyPhieuDatResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.*;
 
 import java.util.List;
@@ -24,4 +25,8 @@ public interface IPhieuThueService {
     public Boolean kiemTraChiTietPhieuThueCuoiCung(int soLuong, int idPhieuThue) throws Exception;
     ThongTinTraPhongResponse getThongTinTraPhong(ThongTinTraPhongRequest request) throws Exception;
     TraPhongResponse traPhong(TraPhongRequest request) throws Exception;
+    PhieuThueResponse capNhatPhanTramGiam(Integer id, int phanTramGiam) throws Exception;
+    List<PhieuThueResponse> getPhieuThuePhongTheoTrang(int pageNumber, int pageSize) throws Exception;
+    Integer getTongTrangPhieuThuePhong(int pageSize);
+    PhieuThueResponse getCapNhatPhieuThuePhongResonseById(Integer id) throws Exception;
 }

@@ -52,6 +52,9 @@ public enum ErrorCode {
     DICHVU_NOT_FOUND(1042, "Dịch vụ không tồn tại"),
     PHUTHU_NOT_FOUND(1042, "Phụ thu không tồn tại"),
     CHITIET_SUCCESS(1043, "Phòng này đã được thanh toán"),
+    PHIEUTHUE_DA_CO_CHITIET(1044, "Phiếu thuê phòng này đã chọn phòng trước đó"),
+    PHIEUTHUE_DATHANHTOAN(1045, "Phiếu thuê phòng này đã được thanh toán trước đó"),
+    TRANGTHAI_BATBUOC(1046, "Trạng thái này là bắt buộc, không thể thay đổi"),
 
     ;
     private int code;

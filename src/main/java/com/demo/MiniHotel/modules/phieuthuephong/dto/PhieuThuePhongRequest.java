@@ -17,5 +17,7 @@ public class PhieuThuePhongRequest {
 //    private Integer idNhanVien;
     private Integer idPhieuDat;
 
+    private int phanTramGiam;
+
     private List<ChiTietRequest> chiTietRequests;
 }

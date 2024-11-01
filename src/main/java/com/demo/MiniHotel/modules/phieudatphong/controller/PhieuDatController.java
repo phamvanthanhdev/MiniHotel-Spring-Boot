@@ -183,6 +183,25 @@ public class PhieuDatController {
                 .build(), HttpStatus.OK);
     }
 
+    @GetMapping("/theo-trang")
+    public ResponseEntity<ApiResponse> getPhieuDatPhongTheoTrang(@RequestParam("pageNumber") int pageNumber,
+                                                                 @RequestParam("pageSize") int pageSize) throws Exception {
+        List<QuanLyPhieuDatResponse> responses = PhieuDatPhongService.getPhieuDatPhongTheoTrang(pageNumber, pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/tong-trang")
+    public ResponseEntity<ApiResponse> getTongTrangPhieuDatPhong(@RequestParam("pageSize") int pageSize) throws Exception {
+        int tongTrang = PhieuDatPhongService.getTongTrangPhieuDatPhong(pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(tongTrang)
+                .build(), HttpStatus.OK);
+    }
+
     //Nhan vien xac nhan don dat phong
 
 

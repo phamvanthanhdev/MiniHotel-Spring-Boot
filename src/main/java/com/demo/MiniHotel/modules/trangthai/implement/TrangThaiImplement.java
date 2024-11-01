@@ -1,5 +1,7 @@
 package com.demo.MiniHotel.modules.trangthai.implement;
 
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.TrangThai;
 import com.demo.MiniHotel.modules.trangthai.dto.TrangThaiRequest;
 import com.demo.MiniHotel.modules.trangthai.service.ITrangThaiService;
@@ -38,17 +40,23 @@ public class TrangThaiImplement implements ITrangThaiService {
 
     @Override
     public TrangThai updateTrangThai(TrangThaiRequest request, Integer id) throws Exception {
-        TrangThai TrangThai = getTrangThaiById(id);
-        if(request.getTenTrangThai() != null)
-            TrangThai.setTenTrangThai(request.getTenTrangThai());
-        return repository.save(TrangThai);
+        TrangThai trangThai = getTrangThaiById(id);
+        if(trangThai.getTenTrangThai().trim().equals("Sạch sẽ")
+        || trangThai.getTenTrangThai().trim().equals("Đang dọn dẹp")
+        || trangThai.getTenTrangThai().trim().equals("Đang sửa chữa")) {
+            throw new AppException(ErrorCode.TRANGTHAI_BATBUOC);
+        }
+        trangThai.setTenTrangThai(request.getTenTrangThai());
+        return repository.save(trangThai);
     }
 
     @Override
     public void deleteTrangThai(Integer id) throws Exception {
-        Optional<TrangThai> TrangThaiOptional = repository.findById(id);
-        if(TrangThaiOptional.isEmpty()){
-            throw new Exception("TrangThai not found");
+        TrangThai trangThai = getTrangThaiById(id);
+        if(trangThai.getTenTrangThai().trim().equals("Sạch sẽ")
+            || trangThai.getTenTrangThai().trim().equals("Đang dọn dẹp")
+            || trangThai.getTenTrangThai().trim().equals("Đang sửa chữa")) {
+            throw new AppException(ErrorCode.TRANGTHAI_BATBUOC);
         }
         repository.deleteById(id);
     }

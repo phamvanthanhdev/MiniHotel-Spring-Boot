@@ -24,6 +24,7 @@ public class ThongTinTraPhongResponse {
     long tienTamUng;
     long tongTien;
     long tongTienPhong;
+    int phanTramGiam;
     List<ChiTietPhieuThueResponse> chiTietPhieuThues;
     List<ChiTietSuDungDichVuResponse> chiTietDichVus;
     List<ChiTietPhuThuResponse> chiTietPhuThus;

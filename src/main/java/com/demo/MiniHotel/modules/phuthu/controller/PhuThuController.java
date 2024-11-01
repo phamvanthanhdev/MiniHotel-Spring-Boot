@@ -4,6 +4,7 @@ import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietThayDoiGiaPhuThu;
 import com.demo.MiniHotel.model.PhuThu;
 import com.demo.MiniHotel.model.ThongTinPhuThu;
+import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
 import com.demo.MiniHotel.modules.dichvu.dto.DichVuResponse;
 import com.demo.MiniHotel.modules.phuthu.dto.ChiTietGiaPhuThuRequest;
 import com.demo.MiniHotel.modules.phuthu.dto.ChiTietGiaPhuThuResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PhuThuController {
     private final IPhuThuService PhuThuService;
+    private final IChiTietPhuThuService chiTietPhuThuService;
     @PostMapping("/")
     public ResponseEntity<ApiResponse> addNewPhuThu(@RequestBody PhuThuRequest request) throws Exception {
         PhuThuResponse response = PhuThuService.addNewPhuThu(request);
@@ -124,5 +126,14 @@ public class PhuThuController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .build(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/chi-tiet/phieu-thue")
+    public ResponseEntity<ApiResponse> getChiTietPhuThuByIdPhieuThue(@RequestParam int idPhieuThue){
+        var response = chiTietPhuThuService.getChiTietPhuThuCuaPhieuThue(idPhieuThue);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
     }
 }

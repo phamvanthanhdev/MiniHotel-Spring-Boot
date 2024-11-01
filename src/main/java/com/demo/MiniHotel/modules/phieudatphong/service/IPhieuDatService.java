@@ -38,4 +38,6 @@ public interface IPhieuDatService {
     public List<PhieuDatUserResponse> getPhieuDatByCccd(String cccd) throws Exception;
     void boSungChiTietPhieuDat(List<ChiTietPhieuDatRequest> chiTietPhieuDatRequests) throws Exception;
     PhieuDatPhong capNhatTrangThaiPhieuDat(int idPhieuDat, int trangThai) throws Exception;
+    List<QuanLyPhieuDatResponse> getPhieuDatPhongTheoTrang(int pageNumber, int pageSize) throws Exception;
+    Integer getTongTrangPhieuDatPhong(int pageSize);
 }

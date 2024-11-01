@@ -2,10 +2,7 @@ package com.demo.MiniHotel.modules.chitiet_phieuthue.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietPhieuThue;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietKhachThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueRequest;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.ChiTietPhieuThueResponse;
-import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
+import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
@@ -203,6 +200,17 @@ public class ChiTietPhieuThueController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    // Thống kê tần suất thuê của các phòng trong khoảng thời gian
+    @GetMapping("/thong-ke-tan-suat")
+    public ResponseEntity<ApiResponse> thongKeTanSuatThuePhong(@RequestParam LocalDate ngayBatDau,
+                                                               @RequestParam LocalDate ngayKetThuc) throws Exception {
+        List<ThongKeTanSuatResponse> responses = chiTietPhieuThueService.thongKeTanSuat(ngayBatDau, ngayKetThuc);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
                 .build(), HttpStatus.OK);
     }
 }

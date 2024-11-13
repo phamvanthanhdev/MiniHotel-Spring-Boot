@@ -140,20 +140,22 @@ public class PaymentController {
         return new ResponseEntity<>(paymentStatusDto, HttpStatus.OK);
     }
 
-    // Thanh toán phần còn lại của đơn hàng
+    // Thanh toán sau khi đặt
     @PostMapping("/create_payment/after")
-    public ResponseEntity<?> createPayment(
-            @RequestParam int idPhieuDat
+    public ResponseEntity<?> createPaymenAfter(
+            @RequestBody PaymentAfterRequest request
     ) throws Exception {
-        PhieuDatDetailsResponse phieuDat = phieuDatService.getPhieuDatDetailsById(idPhieuDat);
+        PhieuDatDetailsResponse phieuDat = phieuDatService.getPhieuDatDetailsById(request.getIdPhieuDat());
 
-        long amount = (phieuDat.getTongTien() - phieuDat.getTienTamUng())*100;
+        long amount;
+        if(request.getLuaChon() == 0){ // Thanh toán 1 phần
+           amount = request.getTienTamUng() * 100;
+        }else{ // Thanh toán tất cả
+            amount = phieuDat.getTienTamUng() * 100;
+        }
 
-        String vnp_TxnRef = "PD" + phieuDat.getIdPhieuDat();
-
-
+        String vnp_TxnRef = String.valueOf(phieuDat.getIdPhieuDat());
         String vnp_TmnCode = ConfigVnpay.vnp_TmnCode;
-
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", ConfigVnpay.vnp_Version);
         vnp_Params.put("vnp_Command", ConfigVnpay.vnp_Command);
@@ -168,14 +170,7 @@ public class PaymentController {
         vnp_Params.put("vnp_IpAddr", "27.78.79.140");
         vnp_Params.put("vnp_OrderType", ConfigVnpay.orderType);
 
-//        String locate = req.getParameter("language");
-//        if (locate != null && !locate.isEmpty()) {
-//            vnp_Params.put("vnp_Locale", locate);
-//        } else {
-//            vnp_Params.put("vnp_Locale", "vn");
-//        }
-        vnp_Params.put("vnp_ReturnUrl", ConfigVnpay.vnp_ReturnUrl_After);
-//        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        vnp_Params.put("vnp_ReturnUrl", ConfigVnpay.vnp_ReturnUrl);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -217,34 +212,34 @@ public class PaymentController {
         PaymentResDto paymentResDto = new PaymentResDto();
         paymentResDto.setStatus("OK");
         paymentResDto.setMessage("Successfully");
-        paymentResDto.setType("After"); // Thanh toán sau thời điểm đặt
+//        paymentResDto.setType("After"); // Thanh toán sau thời điểm đặt
         paymentResDto.setURL(paymentUrl);
 
         return new ResponseEntity<>(paymentResDto, HttpStatus.OK);
     }
 
-    @GetMapping("/payment-update/after")
-    public ResponseEntity<?> transactionAfter(
-            @RequestParam("vnp_Amount") String vnp_Amount,
-            @RequestParam("vnp_PayDate") String vnp_PayDate,
-            @RequestParam("vnp_ResponseCode") String vnp_ResponseCode,
-            @RequestParam("vnp_TxnRef") String vnp_TxnRef
-    ) throws Exception {
-        PaymentStatusDto paymentStatusDto = new PaymentStatusDto();
-        if(vnp_ResponseCode.equals("00")){
-            PhieuDatPhong phieuDat = phieuDatService.getPhieuDatPhongById(Integer.parseInt(vnp_TxnRef));
-            long amount = Long.parseLong(vnp_Amount) + phieuDat.getTienTamUng();
-            phieuDatService.thanhToanPhieuDat(Integer.parseInt(vnp_TxnRef), amount);
-
-            paymentStatusDto.setStatus("OK");
-            paymentStatusDto.setMessage("Successfully");
-            paymentStatusDto.setData("Amount: " + Long.parseLong(vnp_Amount)
-                    + "; vnp_PayDate: " + vnp_PayDate);
-        }else{
-            paymentStatusDto.setStatus("Error");
-            paymentStatusDto.setMessage("Failure");
-            paymentStatusDto.setData("");
-        }
-        return new ResponseEntity<>(paymentStatusDto, HttpStatus.OK);
-    }
+//    @GetMapping("/payment-update/after")
+//    public ResponseEntity<?> transactionAfter(
+//            @RequestParam("vnp_Amount") String vnp_Amount,
+//            @RequestParam("vnp_PayDate") String vnp_PayDate,
+//            @RequestParam("vnp_ResponseCode") String vnp_ResponseCode,
+//            @RequestParam("vnp_TxnRef") String vnp_TxnRef
+//    ) throws Exception {
+//        PaymentStatusDto paymentStatusDto = new PaymentStatusDto();
+//        if(vnp_ResponseCode.equals("00")){
+//            PhieuDatPhong phieuDat = phieuDatService.getPhieuDatPhongById(Integer.parseInt(vnp_TxnRef));
+//            long amount = Long.parseLong(vnp_Amount) + phieuDat.getTienTamUng();
+//            phieuDatService.thanhToanPhieuDat(Integer.parseInt(vnp_TxnRef), amount);
+//
+//            paymentStatusDto.setStatus("OK");
+//            paymentStatusDto.setMessage("Successfully");
+//            paymentStatusDto.setData("Amount: " + Long.parseLong(vnp_Amount)
+//                    + "; vnp_PayDate: " + vnp_PayDate);
+//        }else{
+//            paymentStatusDto.setStatus("Error");
+//            paymentStatusDto.setMessage("Failure");
+//            paymentStatusDto.setData("");
+//        }
+//        return new ResponseEntity<>(paymentStatusDto, HttpStatus.OK);
+//    }
 }

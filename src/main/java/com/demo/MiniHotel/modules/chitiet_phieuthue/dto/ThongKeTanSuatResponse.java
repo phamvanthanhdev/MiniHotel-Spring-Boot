@@ -15,5 +15,6 @@ public class ThongKeTanSuatResponse {
     String tenHangPhong;
     int tanSuat;
     String tiLe;
+    long soNgayThongKe;
     List<TanSuatThuePhongResponse> tanSuatThuePhongs;
 }

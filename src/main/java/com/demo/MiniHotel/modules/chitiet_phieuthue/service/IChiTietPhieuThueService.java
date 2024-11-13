@@ -43,4 +43,5 @@ public interface IChiTietPhieuThueService {
     ChiTietPhieuThueResponse capNhatTienGiamGia(Integer id, long tienGiamGia) throws Exception;
 
     List<ThongKeTanSuatResponse> thongKeTanSuat(LocalDate ngayBatDau, LocalDate ngayKetThuc) throws Exception;
+    ChiTietPhieuThue capNhatChiTietPhieuThue(CapNhatChiTietPhieuThueRequest request) throws Exception;
 }

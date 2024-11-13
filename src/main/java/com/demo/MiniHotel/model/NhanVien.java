@@ -18,9 +18,11 @@ import java.util.List;
 @AllArgsConstructor
 public class NhanVien {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idnhan_vien")
     private Integer idNhanVien;
+    @Column(name = "cccd", nullable = false, unique = true)
+    private String cccd;
     @Column(name = "ho_ten", nullable = false)
     private String hoTen;
     @Column(name = "gioi_tinh", nullable = false)
@@ -29,7 +31,7 @@ public class NhanVien {
     private LocalDate ngaySinh;
     @Column(name = "sdt", nullable = false)
     private String sdt;
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @ManyToOne(fetch = FetchType.EAGER)

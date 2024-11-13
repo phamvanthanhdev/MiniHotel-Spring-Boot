@@ -34,4 +34,6 @@ public class PhieuThueResponse {
     private long tienPhaiTra;
 
     private int phanTramGiam;
+
+    private int trangThai; // Nếu đã thanh toán hết chi tiết phiếu thuê => hoàn thành(1), ngược lại 0
 }

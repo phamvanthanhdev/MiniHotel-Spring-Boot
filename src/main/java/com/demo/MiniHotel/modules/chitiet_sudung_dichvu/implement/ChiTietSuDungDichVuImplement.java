@@ -1,8 +1,11 @@
 package com.demo.MiniHotel.modules.chitiet_sudung_dichvu.implement;
 
 import com.demo.MiniHotel.embedded.IdChiTietSuDungDichVuEmb;
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.CapNhatChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietDichVuPhongResponse;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuResponse;
@@ -178,6 +181,21 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     public List<ChiTietDichVuPhongResponse> getChiTietDichVuCuaPhieuThue(int idPhieuThue) {
         List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_PhieuThuePhong_IdPhieuThue(idPhieuThue);
         return chiTietSuDungDichVus.stream().map(this::convertChiTietDichVuPhongToResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public ChiTietSuDungDichVu getChiTietSuDungDichVuById(int idDichVu, int idChiTietPhieuThue){
+        return repository.findById(new IdChiTietSuDungDichVuEmb(idChiTietPhieuThue, idDichVu))
+                .orElseThrow(() -> new AppException(ErrorCode.CHITIETDICHVU_NOTFOUND));
+    }
+
+    @Override
+    public ChiTietSuDungDichVu capNhatChiTietSuDungDichVu(CapNhatChiTietSuDungDichVuRequest request) {
+        ChiTietSuDungDichVu chiTietSuDungDichVu =
+                getChiTietSuDungDichVuById(request.getIdDichVu(), request.getIdChiTietPhieuThue());
+
+        chiTietSuDungDichVu.setSoLuong(request.getSoLuong());
+        return repository.save(chiTietSuDungDichVu);
     }
 
     private ChiTietDichVuPhongResponse convertChiTietDichVuPhongToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {

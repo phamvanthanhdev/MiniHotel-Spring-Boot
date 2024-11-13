@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -459,12 +460,52 @@ public class PhieuThueImplement implements IPhieuThueService {
         return convertPhieuThuePhongResponse(phieuThuePhong, tongTien, tongTienPhong, tongTienDichVu, tongTienPhuThu);
     }
 
-    private PhieuThueResponse convertPhieuThuePhongResponse(PhieuThuePhong phieuThuePhong, long tongTien, long tongTienPhong, long tongTienDichVu, long tongTienPhuThu){
+    @Override
+    public PhieuThueResponse capNhatPhieuThuePhong(CapNhatPhieuThueRequest request) throws Exception {
+        PhieuThuePhong phieuThuePhong = getPhieuThuePhongById(request.getIdPhieuThue());
+
+        if(request.getNgayNhanPhong().isAfter(request.getNgayTraPhong()))
+            throw new AppException(ErrorCode.THOIGIAN_NOT_VALID);
+
+        phieuThuePhong.setNgayDen(request.getNgayNhanPhong());
+        phieuThuePhong.setNgayDi(request.getNgayTraPhong());
+        phieuThuePhong.setPhanTramGiam(request.getPhanTramGiam());
+
+        repository.save(phieuThuePhong);
+
+        return getCapNhatPhieuThuePhongResonseById(request.getIdPhieuThue());
+    }
+
+    @Override
+    public List<PhieuThueResponse> getPhieuThueFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, String tenKhachHang, String noiDung) throws Exception {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuThueFilter", PhieuThuePhong.class)
+                .registerStoredProcedureParameter("lua_chon", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_bat_dau_loc", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_ket_thuc_loc", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ten_khach_hang", String.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("noi_dung", String.class, ParameterMode.IN)
+                .setParameter("lua_chon", luaChon)
+                .setParameter("ngay_bat_dau_loc", ngayBatDauLoc)
+                .setParameter("ngay_ket_thuc_loc", ngayKetThucLoc)
+                .setParameter("ten_khach_hang", tenKhachHang)
+                .setParameter("noi_dung", noiDung);
+        List<PhieuThuePhong> phieuThuePhongs = query.getResultList();
+
+        List<PhieuThueResponse> responses = new ArrayList<>();
+        for (PhieuThuePhong phieuThuePhong : phieuThuePhongs) {
+            responses.add(getCapNhatPhieuThuePhongResonseById(phieuThuePhong.getIdPhieuThue()));
+        }
+        return responses;
+    }
+
+    private PhieuThueResponse convertPhieuThuePhongResponse(PhieuThuePhong phieuThuePhong, long tongTien, long tongTienPhong, long tongTienDichVu, long tongTienPhuThu) throws Exception {
         Integer idPhieuDat = phieuThuePhong.getPhieuDatPhong() == null ? null : phieuThuePhong.getPhieuDatPhong().getIdPhieuDat();
         Long tienTamUng = phieuThuePhong.getPhieuDatPhong() == null ? 0 : phieuThuePhong.getPhieuDatPhong().getTienTamUng();
 
         long tienDuocGiam = tongTienPhong * phieuThuePhong.getPhanTramGiam()/100;
         long tienPhaiTra = tongTien - tienDuocGiam - tienTamUng;
+
+        int trangThai = kiemTraPhieuThueHoanThanh(phieuThuePhong.getIdPhieuThue()) ? 1 : 0;
 
         return new PhieuThueResponse(
                 phieuThuePhong.getIdPhieuThue(),
@@ -483,6 +524,21 @@ public class PhieuThueImplement implements IPhieuThueService {
                 tongTienPhuThu,
                 tienDuocGiam,
                 tienPhaiTra,
-                phieuThuePhong.getPhanTramGiam());
+                phieuThuePhong.getPhanTramGiam(),
+                trangThai
+        );
+    }
+
+    private boolean kiemTraPhieuThueHoanThanh(int idPhieuThue) throws Exception {
+        List<ChiTietPhieuThue> chiTietPhieuThues = chiTietPhieuThueService.getChiTietPhieuThueByIdPhieuThue(idPhieuThue);
+        if(chiTietPhieuThues != null && !chiTietPhieuThues.isEmpty()) {
+            for (ChiTietPhieuThue chiTiet : chiTietPhieuThues) {
+                if (!chiTiet.getDaThanhToan())
+                    return false;
+            }
+        }else{
+           return false;
+        }
+        return true;
     }
 }

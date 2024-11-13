@@ -18,5 +18,5 @@ public class ChiTietKhuyenMaiResponse {
     long tienGiam;
     long giaGoc;
     long giaKhuyenMai;
-    boolean dangApDung;
+    String trangThai;
 }

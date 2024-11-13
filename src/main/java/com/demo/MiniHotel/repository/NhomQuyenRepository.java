@@ -7,4 +7,7 @@ import java.util.Optional;
 
 public interface NhomQuyenRepository extends JpaRepository<NhomQuyen, Integer> {
     Optional<NhomQuyen> findByTenNhomQuyen(String tenNhomQuyen);
+
+
+    boolean existsByTenNhomQuyen(String tenNhomQuyen);
 }

@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class ChiTietPhieuDatResponse {
 //    private Integer idPhieuDat;
 //    private Integer idHangPhong;
+    private Integer idChiTietPhieuDat;
     private Integer soLuong;
     private String tenHangPhong;
 //    private String hinhAnh;

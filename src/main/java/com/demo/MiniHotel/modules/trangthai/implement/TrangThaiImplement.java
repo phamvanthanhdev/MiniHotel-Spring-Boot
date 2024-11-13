@@ -9,6 +9,8 @@ import com.demo.MiniHotel.repository.TrangThaiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +20,9 @@ public class TrangThaiImplement implements ITrangThaiService {
     private final TrangThaiRepository repository;
     @Override
     public TrangThai addNewTrangThai(TrangThaiRequest request) {
+        if(repository.existsByTenTrangThai(request.getTenTrangThai()))
+            throw new AppException(ErrorCode.TENTRANGTHAI_TONTAI);
+
         TrangThai TrangThai = new TrangThai();
         TrangThai.setTenTrangThai(request.getTenTrangThai());
 
@@ -26,7 +31,14 @@ public class TrangThaiImplement implements ITrangThaiService {
 
     @Override
     public List<TrangThai> getAllTrangThai() {
-        return repository.findAll();
+        List<TrangThai> trangThais = repository.findAll();
+        Collections.sort(trangThais, new Comparator<TrangThai>() {
+            @Override
+            public int compare(TrangThai o1, TrangThai o2) {
+                return o1.getIdTrangThai() > o2.getIdTrangThai() ? 1 : -1;
+            }
+        });
+        return trangThais;
     }
 
     @Override
@@ -58,6 +70,8 @@ public class TrangThaiImplement implements ITrangThaiService {
             || trangThai.getTenTrangThai().trim().equals("Đang sửa chữa")) {
             throw new AppException(ErrorCode.TRANGTHAI_BATBUOC);
         }
+        if(trangThai.getPhongs().size() > 0)
+            throw new AppException(ErrorCode.TRANGTHAI_DANGSUDUNG);
         repository.deleteById(id);
     }
 }

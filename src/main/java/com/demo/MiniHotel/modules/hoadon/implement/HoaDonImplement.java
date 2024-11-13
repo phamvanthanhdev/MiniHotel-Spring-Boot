@@ -330,7 +330,12 @@ public class HoaDonImplement implements IHoaDonService {
 
     private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) throws Exception {
         String tenHangPhong = chiTietPhieuThue.getPhong().getHangPhong().getTenHangPhong();
-        long ngay = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
+
+        long ngay;
+        if(chiTietPhieuThue.getNgayDen().equals(chiTietPhieuThue.getNgayDi()))
+            ngay = 1;
+        else
+            ngay = ChronoUnit.DAYS.between(chiTietPhieuThue.getNgayDen(), chiTietPhieuThue.getNgayDi());
 
         long tongTienPhong = chiTietPhieuThue.getDonGia() * ngay - chiTietPhieuThue.getTienGiamGia();
         long tongTienDichVu = getTongTienChiTietSuDungDichVu(chiTietPhieuThue);

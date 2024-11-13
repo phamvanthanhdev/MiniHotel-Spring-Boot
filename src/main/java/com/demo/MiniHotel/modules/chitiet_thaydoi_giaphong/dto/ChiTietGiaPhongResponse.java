@@ -18,4 +18,5 @@ public class ChiTietGiaPhongResponse {
     LocalDate ngayApDung;
     LocalDate ngayCapNhat;
     boolean dangApDung;
+    String trangThai;
 }

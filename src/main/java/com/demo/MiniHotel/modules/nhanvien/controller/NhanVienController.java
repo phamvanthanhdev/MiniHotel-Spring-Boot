@@ -1,7 +1,10 @@
 package com.demo.MiniHotel.modules.nhanvien.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
+import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDetailsResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienRequest;
 import com.demo.MiniHotel.model.NhanVien;
+import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienResponse;
 import com.demo.MiniHotel.modules.nhanvien.service.INhanVienService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,15 +19,21 @@ import java.util.List;
 public class NhanVienController {
     private final INhanVienService nhanVienService;
     @PostMapping("/")
-    public ResponseEntity<NhanVien> addNewNhanVien(@RequestBody NhanVienRequest request) throws Exception {
-        NhanVien nhanVien = nhanVienService.addNewNhanVien(request);
-        return new ResponseEntity<>(nhanVien, HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse> addNewNhanVien(@RequestBody NhanVienRequest request) throws Exception {
+        NhanVienDetailsResponse response = nhanVienService.addNewNhanVien(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<NhanVien>> getAllNhanVien(){
-        List<NhanVien> nhanViens = nhanVienService.getAllNhanVien();
-        return new ResponseEntity<>(nhanViens, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getAllNhanVien(){
+        List<NhanVienResponse> nhanViens = nhanVienService.getAllNhanVienResponse();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhanViens)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -33,17 +42,31 @@ public class NhanVienController {
         return new ResponseEntity<>(nhanVien, HttpStatus.OK);
     }
 
+    @GetMapping("/details/{id}")
+    public ResponseEntity<ApiResponse> getNhanVienDetailsById(@PathVariable("id") Integer id) throws Exception {
+        NhanVienDetailsResponse nhanVien = nhanVienService.getNhanVienDetailsById(id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhanVien)
+                .build(), HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<NhanVien> updateNhanVien(@PathVariable("id") Integer id,
+    public ResponseEntity<ApiResponse> updateNhanVien(@PathVariable("id") Integer id,
                                                      @RequestBody NhanVienRequest request) throws Exception {
-        NhanVien nhanVien = nhanVienService.updateNhanVien(request,id);
-        return new ResponseEntity<>(nhanVien, HttpStatus.OK);
+        NhanVienDetailsResponse nhanVien = nhanVienService.updateNhanVien(request,id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhanVien)
+                .build(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteNhanVien(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteNhanVien(@PathVariable("id") Integer id) throws Exception {
         nhanVienService.deleteNhanVien(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/dang-nhap")

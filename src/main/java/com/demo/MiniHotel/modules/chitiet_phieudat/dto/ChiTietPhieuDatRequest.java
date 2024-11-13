@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ChiTietPhieuDatRequest {
+    private Integer idChiTietPhieuDat;
     private Integer idHangPhong;
     private Integer idPhieuDat;
     private Integer soLuong;

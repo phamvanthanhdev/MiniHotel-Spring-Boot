@@ -8,7 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TaiKhoanResponse {
+    private int idTaiKhoan;
     private String tenDangNhap;
     private String matKhau;
-    private String nhomQuyen;
+    private int idNhomQuyen;
+    private String tenNhomQuyen;
 }

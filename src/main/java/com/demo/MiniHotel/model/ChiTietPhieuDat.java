@@ -15,19 +15,34 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChiTietPhieuDat {
-    @JsonIgnore
-    @EmbeddedId
-    private IdChiTietPhieuDatEmb idChiTietPhieuDatEmb;
+//    @JsonIgnore
+//    @EmbeddedId
+//    private IdChiTietPhieuDatEmb idChiTietPhieuDatEmb;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idchitiet_phieudat")
+    private Integer idChiTietPhieuDat;
+
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @MapsId("idPhieuDat")
+//    @JoinColumn(name = "idphieu_dat", nullable = false)
+//    private PhieuDatPhong phieuDatPhong;
+//
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @MapsId("idHangPhong")
+//    @JoinColumn(name = "idhang_phong", nullable = false)
+//    private HangPhong hangPhong;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("idPhieuDat")
     @JoinColumn(name = "idphieu_dat", nullable = false)
     private PhieuDatPhong phieuDatPhong;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("idHangPhong")
     @JoinColumn(name = "idhang_phong", nullable = false)
     private HangPhong hangPhong;
 

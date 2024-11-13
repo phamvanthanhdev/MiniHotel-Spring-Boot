@@ -3,23 +3,32 @@ package com.demo.MiniHotel.modules.khachhang.implement;
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.exception.AppException;
 import com.demo.MiniHotel.exception.ErrorCode;
-import com.demo.MiniHotel.model.KhachHang;
-import com.demo.MiniHotel.model.PhieuDatPhong;
-import com.demo.MiniHotel.model.TaiKhoan;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangUpload;
+import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuPhongResponse;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietDichVuPhongResponse;
+import com.demo.MiniHotel.modules.khachhang.dto.*;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
 import com.demo.MiniHotel.modules.phieudatphong.service.IPhieuDatService;
+import com.demo.MiniHotel.modules.phieuthuephong.dto.PhieuThueResponse;
 import com.demo.MiniHotel.modules.taikhoan.service.ITaiKhoanService;
+import com.demo.MiniHotel.repository.KhachHangPagingRepository;
 import com.demo.MiniHotel.repository.KhachHangRepository;
 import com.demo.MiniHotel.repository.PhieuDatPhongRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +36,8 @@ public class KhachHangImplement implements IKhachHangService {
     private final KhachHangRepository repository;
     private final ITaiKhoanService taiKhoanService;
     private final PhieuDatPhongRepository phieuDatPhongRepository;
+    private final KhachHangPagingRepository khachHangPagingRepository;
+    private final PasswordEncoder passwordEncoder;
     @Override
     public KhachHangResponse addNewKhachHang(KhachHangRequest request) throws Exception {
         if(repository.existsByCmnd(request.getCmnd()))
@@ -170,9 +181,11 @@ public class KhachHangImplement implements IKhachHangService {
 
     @Override
     public void deleteKhachHang(Integer id) throws Exception {
-        Optional<KhachHang> KhachHangOptional = repository.findById(id);
-        if(KhachHangOptional.isEmpty()){
-            throw new Exception("KhachHang not found.");
+        KhachHang khachHang = getKhachHangById(id);
+        if(khachHang.getPhieuDatPhongs().size() > 0
+                || khachHang.getPhieuThuePhongs().size() > 0
+        || khachHang.getChiTietPhieuThues().size() > 0){
+            throw new AppException(ErrorCode.KHACHHANG_DADATTHUE);
         }
 
         repository.deleteById(id);
@@ -266,5 +279,131 @@ public class KhachHangImplement implements IKhachHangService {
         for (KhachHangUpload khachHangUpload: khachHangUploads) {
             importKhachHangUpload(khachHangUpload);
         }
+    }
+
+    @Override
+    public Integer getTongTrangKhachHang(int pageSize){
+        int tongKhachHang = repository.findAll().size();
+        int tongTrang = tongKhachHang / pageSize;
+        if(tongKhachHang % pageSize != 0)
+            tongTrang += 1;
+
+        return tongTrang;
+    }
+
+    @Override
+    public List<KhachHangResponse> getKhachHangTheoTrang(int pageNumber, int pageSize) throws Exception {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("idKhachHang").descending());
+        Page<KhachHang> khachHangPage = khachHangPagingRepository.findAll(pageable);
+        List<KhachHang> khachHangs = khachHangPage.stream().toList();
+
+        return khachHangs.stream().map(this::convertKhachHangToResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public KhachHangResponse themKhachHang(KhachHangRequest request) {
+        if(repository.existsByCmnd(request.getCmnd().trim()))
+            throw new AppException(ErrorCode.CCCD_EXISTED);
+
+        if(repository.existsByEmail(request.getEmail().trim()))
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+
+        KhachHang khachHang = new KhachHang();
+        khachHang.setCmnd(request.getCmnd().trim());
+        khachHang.setHoTen(request.getHoTen());
+        khachHang.setSdt(request.getSdt());
+        khachHang.setDiaChi(request.getDiaChi());
+        khachHang.setMaSoThue(null);
+        khachHang.setEmail(request.getEmail().trim());
+        khachHang.setNgaySinh(request.getNgaySinh());
+        khachHang.setGioiTinh(request.isGioiTinh());
+
+        if(request.getIdTaiKhoan() != null){
+            TaiKhoan taiKhoan = taiKhoanService.getTaiKhoanById(request.getIdTaiKhoan());
+            khachHang.setTaiKhoan(taiKhoan);
+        }
+        KhachHang newKhachHang = repository.save(khachHang);
+
+        return convertKhachHangToResponse(newKhachHang);
+    }
+
+    @Override
+    public KhachHangResponse capNhatKhachHang(KhachHangRequest request, Integer id) throws Exception {
+        KhachHang khachHang = getKhachHangById(id);
+
+
+        if(!khachHang.getCmnd().trim().equals(request.getCmnd().trim()) && repository.existsByCmnd(request.getCmnd()))
+            throw new AppException(ErrorCode.CCCD_EXISTED);
+
+        if(!khachHang.getEmail().trim().equals(request.getEmail().trim()) && repository.existsByEmail(request.getEmail()))
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+
+        khachHang.setCmnd(request.getCmnd().trim());
+        khachHang.setHoTen(request.getHoTen());
+        khachHang.setSdt(request.getSdt());
+        khachHang.setDiaChi(request.getDiaChi());
+        khachHang.setMaSoThue(null);
+        khachHang.setEmail(request.getEmail().trim());
+
+        khachHang.setNgaySinh(request.getNgaySinh());
+        khachHang.setGioiTinh(request.isGioiTinh());
+
+        return convertKhachHangToResponse(repository.save(khachHang));
+    }
+
+    @Override
+    public KhachHangProfileResponse getKhachHangProfileByToken() {
+        var context = SecurityContextHolder.getContext();
+        String username = context.getAuthentication().getName();
+        KhachHang khachHang = repository.findByTaiKhoan_TenDangNhap(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return convertKhachHangProfileResponse(khachHang);
+    }
+
+    @Override
+    public KhachHangProfileResponse capNhatProfileKhachHang(KhachHangProfileResquest request) throws Exception {
+        KhachHang khachHang = getKhachHangById(request.getIdKhachHang());
+
+        if(!khachHang.getCmnd().trim().equals(request.getCmnd().trim()) && repository.existsByCmnd(request.getCmnd()))
+            throw new AppException(ErrorCode.CCCD_EXISTED);
+
+        if(!khachHang.getEmail().trim().equals(request.getEmail().trim()) && repository.existsByEmail(request.getEmail()))
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+
+        khachHang.setCmnd(request.getCmnd().trim());
+        khachHang.setHoTen(request.getHoTen());
+        khachHang.setSdt(request.getSdt());
+        khachHang.setDiaChi(request.getDiaChi());
+        khachHang.setMaSoThue(null);
+        khachHang.setEmail(request.getEmail().trim());
+
+        khachHang.setNgaySinh(request.getNgaySinh());
+        khachHang.setGioiTinh(request.isGioiTinh());
+
+
+        if(request.getMatKhauCu() != null && request.getMatKhauMoi() != null
+                && !request.getMatKhauCu().equals("") && !request.getMatKhauMoi().equals("")){
+            boolean isMatches = passwordEncoder.matches(request.getMatKhauCu(), khachHang.getTaiKhoan().getMatKhau());
+            if(!isMatches){
+                throw new AppException(ErrorCode.MATKHAUCU_NOT_MATCH);
+            }
+            taiKhoanService.capNhatMatKhau(khachHang.getTaiKhoan().getIdTaiKhoan(), request.getMatKhauMoi());
+        }
+
+        return convertKhachHangProfileResponse(repository.save(khachHang));
+    }
+
+    public KhachHangProfileResponse convertKhachHangProfileResponse(KhachHang khachHang){
+        return KhachHangProfileResponse.builder()
+                .idKhachHang(khachHang.getIdKhachHang())
+                .cmnd(khachHang.getCmnd())
+                .email(khachHang.getEmail())
+                .hoTen(khachHang.getHoTen())
+                .diaChi(khachHang.getDiaChi())
+                .gioiTinh(khachHang.isGioiTinh())
+                .ngaySinh(khachHang.getNgaySinh())
+                .sdt(khachHang.getSdt())
+                .build();
     }
 }

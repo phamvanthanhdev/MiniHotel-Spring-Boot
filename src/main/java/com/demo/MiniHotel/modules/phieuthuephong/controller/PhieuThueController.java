@@ -5,6 +5,7 @@ import com.demo.MiniHotel.model.ChiTietPhieuThue;
 import com.demo.MiniHotel.model.PhieuThuePhong;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongRequest;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongResponse;
+import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatFilterRequest;
 import com.demo.MiniHotel.modules.phieudatphong.dto.QuanLyPhieuDatResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
@@ -149,5 +150,24 @@ public class PhieuThueController {
     public ResponseEntity<PhieuThueResponse> getCapNhatPhieuThuePhongResponseById(@PathVariable("id") Integer id) throws Exception {
         PhieuThueResponse response = PhieuThuePhongService.getCapNhatPhieuThuePhongResonseById(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/cap-nhat")
+    public ResponseEntity<ApiResponse> capNhatPhieuThuePhong(@RequestBody CapNhatPhieuThueRequest request) throws Exception {
+        PhieuThueResponse response = PhieuThuePhongService.capNhatPhieuThuePhong(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<ApiResponse> getPhieuDatPhongFilter(@RequestBody PhieuThueFilterRequest request) throws Exception {
+        List<PhieuThueResponse> responses = PhieuThuePhongService.getPhieuThueFilter(request.getLuaChon(),
+                request.getNgayBatDauLoc(), request.getNgayKetThucLoc(), request.getTenKhachHang(), request.getNoiDung());
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
     }
 }

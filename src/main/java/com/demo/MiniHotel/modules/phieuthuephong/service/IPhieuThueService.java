@@ -7,6 +7,7 @@ import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.TraPhongResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.QuanLyPhieuDatResponse;
 import com.demo.MiniHotel.modules.phieuthuephong.dto.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IPhieuThueService {
@@ -29,4 +30,6 @@ public interface IPhieuThueService {
     List<PhieuThueResponse> getPhieuThuePhongTheoTrang(int pageNumber, int pageSize) throws Exception;
     Integer getTongTrangPhieuThuePhong(int pageSize);
     PhieuThueResponse getCapNhatPhieuThuePhongResonseById(Integer id) throws Exception;
+    PhieuThueResponse capNhatPhieuThuePhong(CapNhatPhieuThueRequest request) throws Exception;
+    List<PhieuThueResponse> getPhieuThueFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, String tenKhachHang, String noiDung) throws Exception;
 }

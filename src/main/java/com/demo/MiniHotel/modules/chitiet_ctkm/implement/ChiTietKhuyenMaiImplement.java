@@ -180,16 +180,27 @@ public class ChiTietKhuyenMaiImplement implements IChiTietKhuyenMaiService {
         long tienGiam = thongTinHangPhong.getGiaGoc() * (chiTietKhuyenMai.getPhanTramGiam())/100;
         long giaKhuyenMai = thongTinHangPhong.getGiaGoc() - tienGiam;
 
-        boolean dangApDung = false;
+        String trangThai = "";
         ChuongTrinhKhuyenMai chuongTrinhKhuyenMai = chiTietKhuyenMai.getChuongTrinhKhuyenMai();
         LocalDate ngayHienTai = LocalDate.now();
-        if((chuongTrinhKhuyenMai.getNgayBatDau().isBefore(ngayHienTai)
-                && chuongTrinhKhuyenMai.getNgayKetThuc().isAfter(ngayHienTai))
-                || chuongTrinhKhuyenMai.getNgayBatDau().equals(ngayHienTai)
-                || chuongTrinhKhuyenMai.getNgayKetThuc().equals(ngayHienTai)
-        ){
-            dangApDung = true;
+
+        if(chuongTrinhKhuyenMai.getNgayKetThuc().isBefore(ngayHienTai)){
+            trangThai = "Quá hạn áp dụng";
+        }else{
+            if(!chuongTrinhKhuyenMai.getNgayBatDau().isAfter(ngayHienTai))
+                trangThai = "Đang áp dụng";
+            else
+                trangThai = "Chưa áp dụng";
         }
+
+
+//        if((chuongTrinhKhuyenMai.getNgayBatDau().isBefore(ngayHienTai)
+//                && chuongTrinhKhuyenMai.getNgayKetThuc().isAfter(ngayHienTai))
+//                || chuongTrinhKhuyenMai.getNgayBatDau().equals(ngayHienTai)
+//                || chuongTrinhKhuyenMai.getNgayKetThuc().equals(ngayHienTai)
+//        ){
+//            trangThai = true;
+//        }
 
         return ChiTietKhuyenMaiResponse.builder()
                 .idKhuyenMai(chiTietKhuyenMai.getIdChiTietKhuyenMaiEmb().getIdKhuyenMai())
@@ -200,7 +211,7 @@ public class ChiTietKhuyenMaiImplement implements IChiTietKhuyenMaiService {
                 .tienGiam(tienGiam)
                 .giaGoc(thongTinHangPhong.getGiaGoc())
                 .giaKhuyenMai(giaKhuyenMai)
-                .dangApDung(dangApDung)
+                .trangThai(trangThai)
                 .build();
     }
 }

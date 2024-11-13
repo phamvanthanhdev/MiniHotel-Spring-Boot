@@ -10,6 +10,7 @@ import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietUserResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.*;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.vnpay.PhieuDatThanhToanRequest;
+import jakarta.mail.MessagingException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,4 +41,17 @@ public interface IPhieuDatService {
     PhieuDatPhong capNhatTrangThaiPhieuDat(int idPhieuDat, int trangThai) throws Exception;
     List<QuanLyPhieuDatResponse> getPhieuDatPhongTheoTrang(int pageNumber, int pageSize) throws Exception;
     Integer getTongTrangPhieuDatPhong(int pageSize);
+
+    CapNhatPhieuDatResponse getCapNhatPhieuDatById(Integer id) throws Exception;
+
+    PhieuDatPhong capNhatPhieuDat(CapNhatPhieuDatRequest request) throws Exception;
+
+    List<PhieuDatUserResponse> getPhieuDatPhongKhachHangTheoTrang(int pageNumber, int pageSize) throws Exception;
+    Integer getTongTrangPhieuDatPhongKhachHang(int pageSize);
+
+    List<PhieuDatUserResponse> getPhieuDatPhongCccdTheoTrang(int pageNumber, int pageSize, String cccd) throws Exception;
+    Integer getTongTrangPhieuDatPhongCccd(int pageSize, String cccd);
+    List<QuanLyPhieuDatResponse> getPhieuDatFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, int trangThai, String noiDung) throws Exception;
+    void tuDongHuyPhieuDats() throws MessagingException;
+    void sendMailThongBaoDatPhong(int idPhieuDat, String emailKhachHang, List<ChiTietPhieuDat> chiTietPhieuDats) throws MessagingException;
 }

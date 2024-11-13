@@ -10,4 +10,6 @@ import java.util.List;
 public interface PhieuDatPhongRepository extends JpaRepository<PhieuDatPhong, Integer> {
     List<PhieuDatPhong> findByKhachHang_IdKhachHang(int idKhachHang);
     List<PhieuDatPhong> findByNgayBatDau(LocalDate ngayBatDau);
+    long countByKhachHang_IdKhachHang(int idKhachHang);
+    long countByKhachHang_Cmnd(String cmnd);
 }

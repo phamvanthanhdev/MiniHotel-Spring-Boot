@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.bophan.controller;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.modules.bophan.dto.BoPhanRequest;
 import com.demo.MiniHotel.model.BoPhan;
 import com.demo.MiniHotel.modules.bophan.service.IBoPhanService;
@@ -40,8 +41,10 @@ public class BoPhanController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBoPhan(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteBoPhan(@PathVariable("id") Integer id) throws Exception {
         boPhanService.deleteBoPhan(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 }

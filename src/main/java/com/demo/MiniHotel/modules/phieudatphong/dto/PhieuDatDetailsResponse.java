@@ -26,5 +26,6 @@ public class PhieuDatDetailsResponse {
     private Integer trangThaiHuy;
     private Long tienTra;
     private Long tongTien;
+    private String thongBao;
     private List<ChiTietUserResponse> chiTietResponses;
 }

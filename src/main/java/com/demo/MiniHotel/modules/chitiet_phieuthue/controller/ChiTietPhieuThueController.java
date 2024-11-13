@@ -2,11 +2,13 @@ package com.demo.MiniHotel.modules.chitiet_phieuthue.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietPhieuThue;
+import com.demo.MiniHotel.model.ChiTietSuDungDichVu;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
 import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
+import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.CapNhatChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuRequest;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.dto.ChiTietSuDungDichVuResponse;
 import com.demo.MiniHotel.modules.chitiet_sudung_dichvu.service.IChiTietSuDungDichVuService;
@@ -211,6 +213,24 @@ public class ChiTietPhieuThueController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/")
+    public ResponseEntity<ApiResponse> capNhatChiTietPhieuThue(@RequestBody CapNhatChiTietPhieuThueRequest request) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = chiTietPhieuThueService.capNhatChiTietPhieuThue(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(chiTietPhieuThue)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/dich-vu")
+    public ResponseEntity<ApiResponse> capNhatChiTietSuDungDichVu(@RequestBody CapNhatChiTietSuDungDichVuRequest request) throws Exception {
+        ChiTietSuDungDichVu response = chiTietSuDungDichVuService.capNhatChiTietSuDungDichVu(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
                 .build(), HttpStatus.OK);
     }
 }

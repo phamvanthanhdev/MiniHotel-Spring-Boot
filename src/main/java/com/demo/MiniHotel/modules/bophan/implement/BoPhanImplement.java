@@ -1,5 +1,7 @@
 package com.demo.MiniHotel.modules.bophan.implement;
 
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.modules.bophan.dto.BoPhanRequest;
 import com.demo.MiniHotel.model.BoPhan;
 import com.demo.MiniHotel.repository.BoPhanRepository;
@@ -16,6 +18,8 @@ public class BoPhanImplement implements IBoPhanService {
     private final BoPhanRepository repository;
     @Override
     public BoPhan addNewBoPhan(BoPhanRequest request) {
+        if(repository.existsByTenBoPhan(request.getTenBoPhan()))
+            throw new AppException(ErrorCode.TENBOPHAN_EXISTED);
         BoPhan boPhan = new BoPhan();
         boPhan.setTenBoPhan(request.getTenBoPhan());
 
@@ -39,17 +43,20 @@ public class BoPhanImplement implements IBoPhanService {
     @Override
     public BoPhan updateBoPhan(BoPhanRequest request, Integer id) throws Exception {
         BoPhan boPhan = getBoPhanById(id);
-        if(request.getTenBoPhan() != null)
-            boPhan.setTenBoPhan(request.getTenBoPhan());
+        if(!boPhan.getTenBoPhan().trim().equals(request.getTenBoPhan())
+                && repository.existsByTenBoPhan(request.getTenBoPhan().trim()))
+            throw new AppException(ErrorCode.TENBOPHAN_EXISTED);
+
+        boPhan.setTenBoPhan(request.getTenBoPhan());
         return repository.save(boPhan);
     }
 
     @Override
     public void deleteBoPhan(Integer id) throws Exception {
-        Optional<BoPhan> boPhanOptional = repository.findById(id);
-        if(boPhanOptional.isEmpty()){
-            throw new Exception("BoPhan not found");
-        }
+        BoPhan boPhan = getBoPhanById(id);
+        if(boPhan.getNhanViens().size() > 0)
+            throw new AppException(ErrorCode.BOPHAN_DANGSUDUNG);
+
         repository.deleteById(id);
     }
 }

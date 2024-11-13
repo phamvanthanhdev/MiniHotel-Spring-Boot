@@ -2,6 +2,7 @@ package com.demo.MiniHotel.modules.taikhoan.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.TaiKhoan;
+import com.demo.MiniHotel.modules.phieuthuephong.dto.PhieuThueResponse;
 import com.demo.MiniHotel.modules.taikhoan.dto.*;
 import com.demo.MiniHotel.modules.taikhoan.service.ITaiKhoanService;
 import com.nimbusds.jose.JOSEException;
@@ -23,49 +24,6 @@ import java.util.List;
 @CrossOrigin("*")
 public class TaiKhoanController {
     private final ITaiKhoanService taiKhoanService;
-
-//    @PostMapping("/register")
-//    public ResponseEntity<TaiKhoan> registerAccount(@RequestBody TaiKhoanRequest  request){
-//        try {
-//            TaiKhoan taiKhoan = taiKhoanService.addNewTaiKhoan(request);
-//            return new ResponseEntity<>(taiKhoan, HttpStatus.CREATED);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-//        }
-//    }
-
-    /*@PostMapping("/login")
-    public ResponseEntity<TaiKhoan> login(@RequestBody TaiKhoanRequest request){
-        try{
-            TaiKhoan taiKhoan = taiKhoanService.checkLogin(request);
-            return new ResponseEntity<>(taiKhoan, HttpStatus.OK);
-        }catch (RuntimeException ex){
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }*/
-
-//    @PostMapping("/login")
-//    public ResponseEntity<KhachHangResponse> login(@RequestParam("tenDangNhap") String tenDangNhap,
-//                                                   @RequestParam("matKhau") String matKhau){
-//        try{
-//            KhachHangResponse khachHangResponse = taiKhoanService.getKhachHangByTaiKhoan(tenDangNhap, matKhau);
-//            return new ResponseEntity<>(khachHangResponse, HttpStatus.OK);
-//        }catch (RuntimeException ex){
-//            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-//        }
-//    }
-
-//    @PostMapping("/nhan-vien/login")
-//    public ResponseEntity<NhanVienResponse> nhanVienLogin(@RequestParam("tenDangNhap") String tenDangNhap,
-//                                                          @RequestParam("matKhau") String matKhau){
-//        try{
-//            NhanVienResponse nhanVienResponse = taiKhoanService.getNhanVienByTaiKhoan(tenDangNhap, matKhau);
-//            return new ResponseEntity<>(nhanVienResponse, HttpStatus.OK);
-//        }catch (RuntimeException ex){
-//            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-//        }
-//    }
-
     @PostMapping("/dang-ky")
     public ResponseEntity<?> dangKyTaiKhoan(@RequestBody @Valid DangKyRequest request) throws Exception {
         TaiKhoanKhachHangResponse taiKhoan = taiKhoanService.dangKyTaiKhoan(request);
@@ -119,8 +77,57 @@ public class TaiKhoanController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTaiKhoan(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteTaiKhoan(@PathVariable("id") Integer id) throws Exception {
         taiKhoanService.deleteTaiKhoan(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/details/all")
+    public ResponseEntity<ApiResponse> getAllTaiKhoansDetails(){
+        List<TaiKhoanDetailsResponse> taiKhoans = taiKhoanService.getAllTaiKhoanDetails();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(taiKhoans)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/theo-trang")
+    public ResponseEntity<ApiResponse> getTaiKhoanTheoTrang(@RequestParam("pageNumber") int pageNumber,
+                                                                  @RequestParam("pageSize") int pageSize) throws Exception {
+        List<TaiKhoanDetailsResponse> responses = taiKhoanService.getTaiKhoanDetailsTheoTrang(pageNumber, pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/tong-trang")
+    public ResponseEntity<ApiResponse> getTongTrangTaiKhoan(@RequestParam("pageSize") int pageSize) throws Exception {
+        int tongTrang = taiKhoanService.getTongTrangTaiKhoan(pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(tongTrang)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/{idTaiKhoan}")
+    public ResponseEntity<ApiResponse> capNhatTaiKhoan(@PathVariable int idTaiKhoan,
+                                                       @RequestBody TaiKhoanRequest request) throws Exception {
+        TaiKhoanResponse response = taiKhoanService.capNhatThaiKhoan(request, idTaiKhoan);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<ApiResponse> getTaiKhoanDetailsById(@PathVariable("id") Integer id) throws Exception {
+        TaiKhoanDetailsResponse taiKhoan = taiKhoanService.getTaiKhoanDetailsById(id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(taiKhoan)
+                .build(), HttpStatus.OK);
     }
 }

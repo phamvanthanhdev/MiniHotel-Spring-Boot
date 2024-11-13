@@ -55,7 +55,24 @@ public enum ErrorCode {
     PHIEUTHUE_DA_CO_CHITIET(1044, "Phiếu thuê phòng này đã chọn phòng trước đó"),
     PHIEUTHUE_DATHANHTOAN(1045, "Phiếu thuê phòng này đã được thanh toán trước đó"),
     TRANGTHAI_BATBUOC(1046, "Trạng thái này là bắt buộc, không thể thay đổi"),
-
+    TENTRANGTHAI_TONTAI(1047, "Tên trạng thái đã tồn tại"),
+    TRANGTHAI_DANGSUDUNG(1048, "Trạng thái đang có phòng sử dụng"),
+    KHACHHANG_DADATTHUE(1048, "Khách hàng đã từng đặt phòng, hoặc thuê phòng. Không thể xóa"),
+    TENBOPHAN_EXISTED(1049, "Tên bộ phận đã tồn tại"),
+    BOPHAN_DANGSUDUNG(1050, "Đang có nhân viên thuộc bộ phận này. Không thể xóa"),
+    NHANVIEN_DAHOATDONG(1051, "Nhân viên này đã thực hiện hoạt động. Không thể xóa"),
+    TENNHOMQUYEN_EXISTED(1052, "Tên nhóm quyền đã tồn tại"),
+    TENNHOMQUYEN_QUANTRONG(1053, "Tên nhóm quyền quan trọng. Không thể thay đổi hoặc xóa"),
+    NHOMQUYEN_DANGSUDUNG(1054, "Đang có tài khoản sử dụng quyền này. Không thể xóa"),
+    TAIKHOAN_DANGSUDUNG(1055, "Tài khoản này đang được sử dụng. Không thể xóa"),
+    NHOMQUYEN_CHUAPHUHOP(1057, "Nhóm quyền chưa phù hợp với đối tượng này"),
+    PHIEUDAT_DANGCOPHONG(1058, "Phiếu đặt đang có phòng. Không thể xóa"),
+    HANGPHONG_NOT_CHANGE(1060, "Hạng phòng không còn đủ số lượng theo thời gian này"),
+    THOIGIAN_NOT_VALID_2(1061, "Thời gian phải lớn hơn thời gian hiện tại"),
+    MATKHAUCU_NOT_MATCH(1062, "Mật khẩu cũ không chính xác"),
+    CHITIETPHIEUDAT_NOTFOUND(1063, "Chi tiết phiếu đặt không tồn tại"),
+    PHIEUDAT_NOTFOUND(1064, "Phiếu đặt không tồn tại"),
+    CHITIETDICHVU_NOTFOUND(1064, "Chi tiết sử dụng dịch vụ không tồn tại"),
     ;
     private int code;
     private String message;

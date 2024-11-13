@@ -2,11 +2,9 @@ package com.demo.MiniHotel.modules.khachhang.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.KhachHang;
-import com.demo.MiniHotel.modules.khachhang.dto.FileUploadResponse;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
-import com.demo.MiniHotel.modules.khachhang.dto.KhachHangUpload;
+import com.demo.MiniHotel.modules.khachhang.dto.*;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
+import com.demo.MiniHotel.modules.phieuthuephong.dto.PhieuThueResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -111,9 +109,11 @@ public class KhachHangController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteKhachHang(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteKhachHang(@PathVariable("id") Integer id) throws Exception {
         KhachHangService.deleteKhachHang(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 
 
@@ -299,6 +299,61 @@ public class KhachHangController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .message("Import thông tin khách hàng thành công")
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/theo-trang")
+    public ResponseEntity<ApiResponse> getKhachHangTheoTrang(@RequestParam("pageNumber") int pageNumber,
+                                                                  @RequestParam("pageSize") int pageSize) throws Exception {
+        List<KhachHangResponse> responses = KhachHangService.getKhachHangTheoTrang(pageNumber, pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/tong-trang")
+    public ResponseEntity<ApiResponse> getTongTrangKhachHang(@RequestParam("pageSize") int pageSize) throws Exception {
+        int tongTrang = KhachHangService.getTongTrangKhachHang(pageSize);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(tongTrang)
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/them")
+    public ResponseEntity<ApiResponse> themKhachHang(@RequestBody @Valid KhachHangRequest request) throws Exception {
+        KhachHangResponse response = KhachHangService.themKhachHang(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/cap-nhat/{id}")
+    public ResponseEntity<ApiResponse> capNhatKhachHang(@PathVariable int id,@RequestBody @Valid KhachHangRequest request) throws Exception {
+        KhachHangResponse response = KhachHangService.capNhatKhachHang(request, id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse> getKhachHangProfileResponse() throws Exception {
+        KhachHangProfileResponse response = KhachHangService.getKhachHangProfileByToken();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse> capNhatProfileKhachHang(@RequestBody KhachHangProfileResquest request) throws Exception {
+        KhachHangProfileResponse response = KhachHangService.capNhatProfileKhachHang(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
                 .build(), HttpStatus.OK);
     }
 }

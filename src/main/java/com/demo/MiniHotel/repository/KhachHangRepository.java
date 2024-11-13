@@ -10,4 +10,5 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
     Optional<KhachHang> findByCmnd(String cmnd);
     boolean existsByCmnd(String cmnd);
     boolean existsByEmail(String email);
+    Optional<KhachHang> findByTaiKhoan_TenDangNhap(String tenDangNhap);
 }

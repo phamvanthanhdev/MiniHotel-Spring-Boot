@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChiTietPhieuDatResponse2 {
+    private Integer idChiTietPhieuDat;
     private Integer soLuong;
     private Integer idHangPhong;
     private String tenHangPhong;

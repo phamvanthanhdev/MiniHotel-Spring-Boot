@@ -52,8 +52,9 @@ public class ChiTietThayDoiGiaPhongImplement implements IChiTietThayDoiGiaPhongS
     public ChiTietThayDoiGiaPhong themChiTietThayDoiGiaPhong(ChiTietGiaPhongRequest request) throws Exception {
         LocalDate ngayCapNhat = LocalDate.now();
         NhanVien nhanVien = nhanVienService.getNhanVienByToken();
+        IdChiTietThayDoiGiaPhongEmb idChiTietThayDoiGiaPhongEmb = new IdChiTietThayDoiGiaPhongEmb(request.getIdHangPhong(), nhanVien.getIdNhanVien(), ngayCapNhat);
         Optional<ChiTietThayDoiGiaPhong> chiTietGiaPhongOptional =
-                repository.findById(new IdChiTietThayDoiGiaPhongEmb(request.getIdHangPhong(), nhanVien.getIdNhanVien(), ngayCapNhat));
+                repository.findById(idChiTietThayDoiGiaPhongEmb);
         if(chiTietGiaPhongOptional.isPresent()){
             if(chiTietGiaPhongOptional.get().getIdChiTietThayDoiGiaPhongEmb().getNgayCapNhat().equals(ngayCapNhat))
                 throw new AppException(ErrorCode.GIAPHONG_EXISTED);
@@ -151,7 +152,17 @@ public class ChiTietThayDoiGiaPhongImplement implements IChiTietThayDoiGiaPhongS
         ThongTinHangPhong thongTinHangPhong = thongTinHangPhongService
                 .getThongTinHangPhongById(chiTietThayDoiGiaPhong.getHangPhong().getIdHangPhong());
 
-        boolean dangApDung = thongTinHangPhong.getGiaGoc() == chiTietThayDoiGiaPhong.getGiaCapNhat();
+//        boolean dangApDung = thongTinHangPhong.getGiaGoc() == chiTietThayDoiGiaPhong.getGiaCapNhat();
+
+        String trangThai = "";
+        LocalDate ngayHienTai = LocalDate.now();
+        if(chiTietThayDoiGiaPhong.getNgayApDung().isAfter(ngayHienTai)){
+            trangThai = "Chưa áp dụng";
+        }else{
+            trangThai = "Đã áp dụng";
+            if(thongTinHangPhong.getGiaGoc() == chiTietThayDoiGiaPhong.getGiaCapNhat())
+                trangThai = "Đang áp dụng";
+        }
 
         return ChiTietGiaPhongResponse.builder()
                 .idHangPhong(chiTietThayDoiGiaPhong.getHangPhong().getIdHangPhong())
@@ -161,7 +172,7 @@ public class ChiTietThayDoiGiaPhongImplement implements IChiTietThayDoiGiaPhongS
                 .giaCapNhat(chiTietThayDoiGiaPhong.getGiaCapNhat())
                 .ngayApDung(chiTietThayDoiGiaPhong.getNgayApDung())
                 .ngayCapNhat(chiTietThayDoiGiaPhong.getIdChiTietThayDoiGiaPhongEmb().getNgayCapNhat())
-                .dangApDung(dangApDung)
+                .trangThai(trangThai)
                 .build();
     }
 }

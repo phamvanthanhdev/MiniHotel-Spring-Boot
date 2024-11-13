@@ -1,8 +1,10 @@
 package com.demo.MiniHotel.modules.nhomquyen.controller;
 
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.NhomQuyen;
 import com.demo.MiniHotel.modules.nhomquyen.dto.NhomQuyenRequest;
+import com.demo.MiniHotel.modules.nhomquyen.dto.NhomQuyenResponse;
 import com.demo.MiniHotel.modules.nhomquyen.service.INhomQuyenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,32 +19,46 @@ import java.util.List;
 public class NhomQuyenController {
     private final INhomQuyenService nhomQuyenService;
     @PostMapping("/")
-    public ResponseEntity<NhomQuyen> addNewNhomQuyen(@RequestBody NhomQuyenRequest request){
+    public ResponseEntity<ApiResponse> addNewNhomQuyen(@RequestBody NhomQuyenRequest request){
         NhomQuyen nhomQuyen = nhomQuyenService.addNewNhomQuyen(request);
-        return new ResponseEntity<>(nhomQuyen, HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhomQuyen)
+                .build(), HttpStatus.CREATED);
     }
     @GetMapping("/all")
-    public ResponseEntity<List<NhomQuyen>> getAllNhomQuyen(){
+    public ResponseEntity<ApiResponse> getAllNhomQuyen(){
         List<NhomQuyen> nhomQuyens = nhomQuyenService.getAllNhomQuyen();
-        return new ResponseEntity<>(nhomQuyens, HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhomQuyens)
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NhomQuyen> getNhomQuyenById(@PathVariable("id") Integer id) throws Exception {
-        NhomQuyen nhomQuyen = nhomQuyenService.getNhomQuyenById(id);
-        return new ResponseEntity<>(nhomQuyen, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getNhomQuyenById(@PathVariable("id") Integer id) throws Exception {
+        NhomQuyenResponse nhomQuyen = nhomQuyenService.getNhomQuyenResponseById(id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhomQuyen)
+                .build(), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NhomQuyen> updateNhomQuyen(@PathVariable("id") Integer id,
+    public ResponseEntity<ApiResponse> updateNhomQuyen(@PathVariable("id") Integer id,
                                                @RequestBody NhomQuyenRequest request) throws Exception {
-        NhomQuyen nhomQuyen = nhomQuyenService.updateNhomQuyen(request,id);
-        return new ResponseEntity<>(nhomQuyen, HttpStatus.OK);
+        NhomQuyenResponse nhomQuyen = nhomQuyenService.updateNhomQuyen(request,id);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhomQuyen)
+                .build(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteNhomQuyen(@PathVariable("id") Integer id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteNhomQuyen(@PathVariable("id") Integer id) throws Exception {
         nhomQuyenService.deleteNhomQuyen(id);
-        return new ResponseEntity<>("Deleted No." + id + " successfully.", HttpStatus.OK);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
     }
 }

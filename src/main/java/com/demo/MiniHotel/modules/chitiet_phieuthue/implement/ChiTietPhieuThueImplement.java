@@ -404,6 +404,9 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
     @Override
     public List<ThongKeTanSuatResponse> thongKeTanSuat(LocalDate ngayBatDau, LocalDate ngayKetThuc) throws Exception {
         List<TanSuatThuePhongResponse> tanSuatThuePhongRespons = new ArrayList<>();
+        long soNgayThongKe = ChronoUnit.DAYS.between(ngayBatDau, ngayKetThuc) + 1;
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.HALF_EVEN);
 
         LocalDate currentDate = ngayBatDau;
         while (!currentDate.isAfter(ngayKetThuc)) {
@@ -419,6 +422,7 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
                             .maPhong(phongDaThue.getMaPhong())
                             .idHangPhong(phongDaThue.getIdHangPhong())
                             .tanSuat(phongDaThue.getDaThue() ? 1 : 0)
+                                    .tiLe("0")
                             .build());
                 }
             } else{
@@ -427,6 +431,9 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
                         if (phongDaThue.getMaPhong().equals(tanSuatThuePhongResponse.getMaPhong())
                                 && phongDaThue.getDaThue()) {
                             tanSuatThuePhongResponse.setTanSuat(tanSuatThuePhongResponse.getTanSuat() + 1);
+
+                            double tiLePhong = (double) tanSuatThuePhongResponse.getTanSuat() /soNgayThongKe * 100;
+                            tanSuatThuePhongResponse.setTiLe(df.format(tiLePhong));
                         }
                     }
                 }
@@ -440,28 +447,29 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         int tanSuatHangPhong = 0;
         int index = 0;
         int tongTanSuatHangPhong = 0;
-        long soNgayThongKe = ChronoUnit.DAYS.between(ngayBatDau, ngayKetThuc);
-        DecimalFormat df = new DecimalFormat("#.##");
-        df.setRoundingMode(RoundingMode.HALF_EVEN);
+
         for (int i = 0; i < tanSuatThuePhongRespons.size(); i++) {
             tanSuatHangPhong += tanSuatThuePhongRespons.get(i).getTanSuat(); // Tính tần suất
-            tongTanSuatHangPhong += tanSuatThuePhongRespons.get(i).getTanSuat(); // Tổng tần suất tất cả
+            double tiLeHangPhong = (double) tanSuatHangPhong / soNgayThongKe * 100;
+//            tongTanSuatHangPhong += tanSuatThuePhongRespons.get(i).getTanSuat(); // Tổng tần suất tất cả
             if(i == tanSuatThuePhongRespons.size() - 1){ // Trường hợp phân tử cuối cùng trong danh sách
                 ThongTinHangPhong thongTinHangPhong = thongTinHangPhongService
                         .getThongTinHangPhongById(tanSuatThuePhongRespons.get(i).getIdHangPhong());
                 // Thêm tỉ lệ của từng phòng
-                for (int j = index; j < i+1; j++) {
+                /*for (int j = index; j < i+1; j++) {
                     double tiLePhong = 0;
                     if(tanSuatHangPhong > 0)
                         tiLePhong = (double) tanSuatThuePhongRespons.get(j).getTanSuat() / tanSuatHangPhong * 100;
                     tanSuatThuePhongRespons.get(j).setTiLe(df.format(tiLePhong));
-                }
+                }*/
 
                 // Thêm thống kê tần suất
                 thongKeTanSuatResponses.add(ThongKeTanSuatResponse.builder()
                         .idHangPhong(tanSuatThuePhongRespons.get(i).getIdHangPhong())
                         .tenHangPhong(thongTinHangPhong.getTenHangPhong())
                         .tanSuat(tanSuatHangPhong)
+                        .tiLe(df.format(tiLeHangPhong))
+                        .soNgayThongKe(soNgayThongKe)
                         .tanSuatThuePhongs(tanSuatThuePhongRespons.subList(index, i + 1))
                         .build());
             }else{
@@ -469,18 +477,20 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
                     ThongTinHangPhong thongTinHangPhong = thongTinHangPhongService
                             .getThongTinHangPhongById(tanSuatThuePhongRespons.get(i).getIdHangPhong());
 
-                    // Thêm tỉ lệ của từng phòng
-                    for (int j = index; j < i+1; j++) {
-                        double tiLePhong = 0;
-                        if(tanSuatHangPhong > 0)
-                            tiLePhong = (double) tanSuatThuePhongRespons.get(j).getTanSuat() / tanSuatHangPhong * 100;
-                        tanSuatThuePhongRespons.get(j).setTiLe(df.format(tiLePhong));
-                    }
+//                    // Thêm tỉ lệ của từng phòng
+//                    for (int j = index; j < i+1; j++) {
+//                        double tiLePhong = 0;
+//                        if(tanSuatHangPhong > 0)
+//                            tiLePhong = (double) tanSuatThuePhongRespons.get(j).getTanSuat() / tanSuatHangPhong * 100;
+//                        tanSuatThuePhongRespons.get(j).setTiLe(df.format(tiLePhong));
+//                    }
 
                     thongKeTanSuatResponses.add(ThongKeTanSuatResponse.builder()
                             .idHangPhong(tanSuatThuePhongRespons.get(i).getIdHangPhong())
                             .tenHangPhong(thongTinHangPhong.getTenHangPhong())
                             .tanSuat(tanSuatHangPhong)
+                            .tiLe(df.format(tiLeHangPhong))
+                            .soNgayThongKe(soNgayThongKe)
                             .tanSuatThuePhongs(tanSuatThuePhongRespons.subList(index, i + 1))
                             .build());
                     tanSuatHangPhong = 0;
@@ -489,13 +499,37 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
             }
         }
 
-        for (ThongKeTanSuatResponse response: thongKeTanSuatResponses) {
-            double tiLeHangPhong = (double) response.getTanSuat() / tongTanSuatHangPhong * 100;
-            response.setTiLe(df.format(tiLeHangPhong));
-        }
+//        for (ThongKeTanSuatResponse response: thongKeTanSuatResponses) {
+//            double tiLeHangPhong = (double) response.getTanSuat() / tongTanSuatHangPhong * 100;
+//            response.setTiLe(df.format(tiLeHangPhong));
+//        }
 
 
         return thongKeTanSuatResponses;
+    }
+
+    @Override
+    public ChiTietPhieuThue capNhatChiTietPhieuThue(CapNhatChiTietPhieuThueRequest request) throws Exception {
+        ChiTietPhieuThue chiTietPhieuThue = getChiTietPhieuThueById(request.getIdChiTietPhieuThue());
+        if(request.getNgayTraPhong().isBefore(chiTietPhieuThue.getNgayDen()))
+            throw new AppException(ErrorCode.THOIGIAN_NOT_VALID);
+
+        if(!request.getNgayTraPhong().isEqual(chiTietPhieuThue.getNgayDi())){
+            if(request.getNgayTraPhong().isBefore(chiTietPhieuThue.getNgayDi())){
+                chiTietPhieuThue.setNgayDi(request.getNgayTraPhong());
+            }else{
+                boolean isHangPhongTrong = thongTinHangPhongService.kiemTraPhongHangPhongTrong(
+                        chiTietPhieuThue.getPhong().getHangPhong().getIdHangPhong(),
+                        chiTietPhieuThue.getNgayDen(), request.getNgayTraPhong(), 1);
+                if(!isHangPhongTrong)
+                    throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+                chiTietPhieuThue.setNgayDi(request.getNgayTraPhong());
+            }
+        }
+
+        chiTietPhieuThue.setTienGiamGia(request.getTienGiamGia());
+
+        return repository.save(chiTietPhieuThue);
     }
 
     private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) throws Exception {

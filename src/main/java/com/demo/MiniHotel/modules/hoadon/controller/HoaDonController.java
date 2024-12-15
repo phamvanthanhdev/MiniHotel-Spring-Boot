@@ -7,11 +7,18 @@ import com.demo.MiniHotel.modules.hoadon.dto.HoaDonDetailsResponse;
 import com.demo.MiniHotel.modules.hoadon.dto.HoaDonRequest;
 import com.demo.MiniHotel.modules.hoadon.service.IHoaDonService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -105,4 +112,33 @@ public class HoaDonController {
         List<DoanhThuQuyResponse> doanhThuQuyResponses = HoaDonService.getDoanhThuTheoQuy(quyBatDau, quyKetThuc, nam);
         return new ResponseEntity<>(doanhThuQuyResponses, HttpStatus.OK);
     }
+    @GetMapping("/export-csv")
+    public ResponseEntity<byte[]> exportCSV(@RequestParam("ngay") LocalDate ngay) {
+        try {
+            List<HoaDonNgay> hoaDonNgays = HoaDonService.getHoaDonNgaysTheoNgay(ngay);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(out);
+            writer.write('\uFEFF');
+            try (CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withDelimiter(';').withHeader("Số hóa đơn", "Mã phiếu thuê", "Tổng tiền", "Ngày tạo", "Nhân viên tạo" ))) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                if(hoaDonNgays != null && !hoaDonNgays.isEmpty()) {
+                    for (HoaDonNgay hoaDonNgay : hoaDonNgays) {
+                        csvPrinter.printRecord(hoaDonNgay.getSoHoaDon(), hoaDonNgay.getIdPhieuThue(), hoaDonNgay.getTongTien().toString(), formatter.format(hoaDonNgay.getNgayTao()), hoaDonNgay.getTenNhanVien());
+                    }
+                }
+                csvPrinter.flush();
+            }
+//            writer.flush();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=hoaDonNgay.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(out.toByteArray());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+//            return ResponseEntity.status(500).build();
+        }
+    }
+
 }

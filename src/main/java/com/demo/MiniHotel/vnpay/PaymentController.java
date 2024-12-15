@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.vnpay;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.PhieuDatPhong;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
 import com.demo.MiniHotel.modules.phieudatphong.dto.PhieuDatDetailsResponse;
@@ -29,7 +30,8 @@ public class PaymentController {
     public ResponseEntity<?> createPayment(
             @RequestBody PhieuDatThanhToanRequest request
     ) throws Exception {
-        PhieuDatPhong phieuDat = phieuDatService.datPhongKhachSan(request);
+        ApiResponse apiResponse = phieuDatService.datPhongKhachSanBySP(request);
+        PhieuDatPhong phieuDat = phieuDatService.getPhieuDatPhongById((Integer) apiResponse.getResult());
 
 //        long amount = Integer.parseInt(req.getParameter("amount"))*100;
         long amount = request.getPhieuDat().getTienTamUng()*100;

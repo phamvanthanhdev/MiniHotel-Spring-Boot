@@ -34,12 +34,12 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     public List<ChiTietSuDungDichVuResponse> themChiTietSuDungDichVu(ChiTietSuDungDichVuRequest request) throws Exception {
         //Kiem tra chi tiet phiếu thuê có sử dụng dịch vụ này hay chưa
         //Nếu đã sử dụng -> thêm số lượng, nếu chưa -> thêm mới
-        IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb =
-                new IdChiTietSuDungDichVuEmb(request.getIdChiTietPhieuThue(), request.getIdDichVu());
-        Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
+        Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional =
+                repository.findByChiTietPhieuThue_IdChiTietPhieuThueAndDichVu_IdDichVuAndDonGiaAndDaThanhToan
+                        (request.getIdChiTietPhieuThue(), request.getIdDichVu(), request.getDonGia(), request.getDaThanhToan());
         if(chiTietSuDungDichVuOptional.isEmpty()) {
             ChiTietSuDungDichVu chiTietSuDungDichVuNew = new ChiTietSuDungDichVu();
-            chiTietSuDungDichVuNew.setIdChiTietSuDungDichVuEmb(idChiTietSuDungDichVuEmb);
+//            chiTietSuDungDichVuNew.setIdChiTietSuDungDichVuEmb(idChiTietSuDungDichVuEmb);
             chiTietSuDungDichVuNew.setDonGia(request.getDonGia());
             chiTietSuDungDichVuNew.setNgayTao(LocalDate.now());
             chiTietSuDungDichVuNew.setDaThanhToan(request.getDaThanhToan());
@@ -63,12 +63,8 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
             ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
             chiTietSuDungDichVu.setDaThanhToan(request.getDaThanhToan());
             chiTietSuDungDichVu.setDonGia(request.getDonGia());
-            if(chiTietSuDungDichVu.getSoLuong() + request.getSoLuong() <= 0){
-                deleteChiTietSuDungDichVu(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb());
-            }else {
-                chiTietSuDungDichVu.setSoLuong(chiTietSuDungDichVu.getSoLuong() + request.getSoLuong());
-                repository.save(chiTietSuDungDichVu);
-            }
+            chiTietSuDungDichVu.setSoLuong(chiTietSuDungDichVu.getSoLuong() + request.getSoLuong());
+            repository.save(chiTietSuDungDichVu);
         }
         return getChiTietSuDungDichVuByIdChiTietPhieuThue(request.getIdChiTietPhieuThue());
     }
@@ -89,13 +85,7 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
 
     @Override
     public ChiTietSuDungDichVu updateChiTietDichVu(ChiTietSuDungDichVuRequest request) throws Exception {
-        IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb =
-                new IdChiTietSuDungDichVuEmb(request.getIdChiTietPhieuThue(), request.getIdDichVu());
-        Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
-        if(chiTietSuDungDichVuOptional.isEmpty()){
-            throw new Exception("ChiTietSuDungDichVu not found!");
-        }
-        ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
+        ChiTietSuDungDichVu chiTietSuDungDichVu = getChiTietSuDungDichVuById(request.getIdChiTietSuDungDichVu());
         if(request.getDonGia() != null)
             chiTietSuDungDichVu.setDonGia(request.getDonGia());
 
@@ -120,23 +110,16 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     }
 
     @Override
-    public void deleteChiTietSuDungDichVu(IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb) throws Exception {
-        /*IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb =
-                new IdChiTietSuDungDichVuEmb(idChiTietPhieuThue, idDichVu);*/
-        Optional<ChiTietSuDungDichVu> ChiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
-        if(ChiTietSuDungDichVuOptional.isEmpty()){
-            throw new Exception("ChiTietSuDungDichVu not found!");
-        }
-        repository.deleteById(idChiTietSuDungDichVuEmb);
+    public void deleteChiTietSuDungDichVu(int idChiTietSuDungDichVu) throws Exception {
+        ChiTietSuDungDichVu chiTietSuDungDichVu = getChiTietSuDungDichVuById(idChiTietSuDungDichVu);
+        if(chiTietSuDungDichVu.getDaThanhToan())
+            throw new RuntimeException("ChiTietSuDungDichVu da thanh toan");
+        repository.deleteById(chiTietSuDungDichVu.getIdChiTietSuDungDichVu());
     }
 
     @Override
-    public ChiTietSuDungDichVu addHoaDonToChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu, String soHoaDon) throws Exception {
-        IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb =
-                new IdChiTietSuDungDichVuEmb(idChiTietPhieuThue, idDichVu);
-        Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
-        if(chiTietSuDungDichVuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
-        ChiTietSuDungDichVu chiTietSuDungDichVu = chiTietSuDungDichVuOptional.get();
+    public ChiTietSuDungDichVu addHoaDonToChiTietSuDungDichVu(Integer idChiTietSuDungDichVu, String soHoaDon) throws Exception {
+        ChiTietSuDungDichVu chiTietSuDungDichVu = getChiTietSuDungDichVuById(idChiTietSuDungDichVu);
         HoaDon hoaDon = hoaDonService.getHoaDonById(soHoaDon);
         chiTietSuDungDichVu.setHoaDon(hoaDon);
         chiTietSuDungDichVu.setDaThanhToan(true);
@@ -145,12 +128,8 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     }
 
     @Override
-    public HoaDon getHoaDonInChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu) throws Exception {
-        IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb =
-                new IdChiTietSuDungDichVuEmb(idChiTietPhieuThue, idDichVu);
-        Optional<ChiTietSuDungDichVu> chiTietSuDungDichVuOptional = repository.findById(idChiTietSuDungDichVuEmb);
-        if(chiTietSuDungDichVuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
-        return chiTietSuDungDichVuOptional.get().getHoaDon();
+    public HoaDon getHoaDonInChiTietSuDungDichVu(Integer idChiTietSuDungDichVu) throws Exception {
+        return getChiTietSuDungDichVuById(idChiTietSuDungDichVu).getHoaDon();
     }
 
     @Override
@@ -158,9 +137,7 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
         List<ChiTietSuDungDichVu> chiTietSuDungDichVus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
         for (ChiTietSuDungDichVu chiTietSuDungDichVu:chiTietSuDungDichVus) {
             if(!chiTietSuDungDichVu.getDaThanhToan()) {
-                addHoaDonToChiTietSuDungDichVu(idChiTietPhieuThue,
-                        chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
-                        soHoaDon);
+                addHoaDonToChiTietSuDungDichVu(chiTietSuDungDichVu.getIdChiTietSuDungDichVu(), soHoaDon);
             }
         }
         return chiTietSuDungDichVus;
@@ -184,23 +161,32 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
     }
 
     @Override
-    public ChiTietSuDungDichVu getChiTietSuDungDichVuById(int idDichVu, int idChiTietPhieuThue){
-        return repository.findById(new IdChiTietSuDungDichVuEmb(idChiTietPhieuThue, idDichVu))
+    public ChiTietSuDungDichVu getChiTietSuDungDichVuById(int idChiTietSuDungDichVu){
+        return repository.findById(idChiTietSuDungDichVu)
                 .orElseThrow(() -> new AppException(ErrorCode.CHITIETDICHVU_NOTFOUND));
     }
 
     @Override
     public ChiTietSuDungDichVu capNhatChiTietSuDungDichVu(CapNhatChiTietSuDungDichVuRequest request) {
         ChiTietSuDungDichVu chiTietSuDungDichVu =
-                getChiTietSuDungDichVuById(request.getIdDichVu(), request.getIdChiTietPhieuThue());
+                getChiTietSuDungDichVuById(request.getIdChiTietSuDungDichVu());
 
         chiTietSuDungDichVu.setSoLuong(request.getSoLuong());
         return repository.save(chiTietSuDungDichVu);
     }
 
+    @Override
+    public void xoaChiTietSuDungDichVu(int idChiTietSuDungDichVu) throws Exception {
+        ChiTietSuDungDichVu chiTietSuDungDichVu = getChiTietSuDungDichVuById(idChiTietSuDungDichVu);
+        if(chiTietSuDungDichVu.getDaThanhToan())
+            throw new AppException(ErrorCode.CHITIETDICHVU_DATHANHTOAN);
+        repository.deleteById(chiTietSuDungDichVu.getIdChiTietSuDungDichVu());
+    }
+
     private ChiTietDichVuPhongResponse convertChiTietDichVuPhongToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
         ChiTietPhieuThue chiTietPhieuThue = chiTietSuDungDichVu.getChiTietPhieuThue();
         return ChiTietDichVuPhongResponse.builder()
+                .idChiTietSuDungDichVu(chiTietSuDungDichVu.getIdChiTietSuDungDichVu())
                 .idChiTietPhieuThue(chiTietPhieuThue.getIdChiTietPhieuThue())
                 .idDichVu(chiTietSuDungDichVu.getDichVu().getIdDichVu())
                 .tenDichVu(chiTietSuDungDichVu.getDichVu().getTenDichVu())
@@ -214,11 +200,15 @@ public class ChiTietSuDungDichVuImplement implements IChiTietSuDungDichVuService
 
 
     private ChiTietSuDungDichVuResponse convertChiTietSuDungDichVuToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
-        return new ChiTietSuDungDichVuResponse(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdChiTietPhieuThue(),
-                chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
+        return new ChiTietSuDungDichVuResponse(
+                chiTietSuDungDichVu.getIdChiTietSuDungDichVu(),
+                chiTietSuDungDichVu.getChiTietPhieuThue().getIdChiTietPhieuThue(),
+                chiTietSuDungDichVu.getDichVu().getIdDichVu(),
                 chiTietSuDungDichVu.getDichVu().getTenDichVu(),
                 chiTietSuDungDichVu.getSoLuong(),
                 chiTietSuDungDichVu.getNgayTao(),
-                chiTietSuDungDichVu.getDonGia(), chiTietSuDungDichVu.getDaThanhToan());
+                chiTietSuDungDichVu.getDonGia(), chiTietSuDungDichVu.getDaThanhToan(),
+                chiTietSuDungDichVu.getChiTietPhieuThue().getPhong().getMaPhong()
+        );
     }
 }

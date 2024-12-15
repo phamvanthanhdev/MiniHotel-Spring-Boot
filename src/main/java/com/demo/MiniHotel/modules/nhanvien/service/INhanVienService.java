@@ -1,5 +1,6 @@
 package com.demo.MiniHotel.modules.nhanvien.service;
 
+import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDangNhapResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDetailsResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienRequest;
 import com.demo.MiniHotel.model.NhanVien;
@@ -16,4 +17,5 @@ public interface INhanVienService {
     public void deleteNhanVien(Integer id) throws Exception;
     public NhanVien getNhanVienByToken() throws Exception;
     public NhanVienDetailsResponse getNhanVienDetailsById(Integer id) throws Exception;
+    NhanVienDangNhapResponse getThongTinNhanVienDangNhapByToken() throws Exception;
 }

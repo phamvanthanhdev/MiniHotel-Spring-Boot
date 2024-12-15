@@ -1,6 +1,7 @@
 package com.demo.MiniHotel.modules.nhanvien.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
+import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDangNhapResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDetailsResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienRequest;
 import com.demo.MiniHotel.model.NhanVien;
@@ -70,8 +71,12 @@ public class NhanVienController {
     }
 
     @GetMapping("/dang-nhap")
-    public ResponseEntity<NhanVien> getNhanVienByTenDangNhap() throws Exception {
-        NhanVien nhanVien = nhanVienService.getNhanVienByToken();
-        return new ResponseEntity<>(nhanVien, HttpStatus.OK);
+    public ResponseEntity<ApiResponse> getNhanVienByTenDangNhap() throws Exception {
+        NhanVienDangNhapResponse nhanVien = nhanVienService.getThongTinNhanVienDangNhapByToken();
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(nhanVien)
+                .build()
+                , HttpStatus.OK);
     }
 }

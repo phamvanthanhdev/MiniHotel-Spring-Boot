@@ -51,6 +51,4 @@ public class PhieuThuePhong {
     @JsonIgnore
     @OneToMany(mappedBy = "phieuThuePhong")
     private List<HoaDon> hoaDons;
-
-
 }

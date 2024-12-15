@@ -311,21 +311,30 @@ public class HoaDonImplement implements IHoaDonService {
     }
 
     private ChiTietSuDungDichVuResponse convertChiTietSuDungDichVuToResponse(ChiTietSuDungDichVu chiTietSuDungDichVu) {
-        return new ChiTietSuDungDichVuResponse(chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdChiTietPhieuThue(),
-                chiTietSuDungDichVu.getIdChiTietSuDungDichVuEmb().getIdDichVu(),
+        return new ChiTietSuDungDichVuResponse(
+                chiTietSuDungDichVu.getIdChiTietSuDungDichVu(),
+                chiTietSuDungDichVu.getChiTietPhieuThue().getIdChiTietPhieuThue(),
+                chiTietSuDungDichVu.getDichVu().getIdDichVu(),
                 chiTietSuDungDichVu.getDichVu().getTenDichVu(),
                 chiTietSuDungDichVu.getSoLuong(),
                 chiTietSuDungDichVu.getNgayTao(),
-                chiTietSuDungDichVu.getDonGia(), chiTietSuDungDichVu.getDaThanhToan());
+                chiTietSuDungDichVu.getDonGia(),
+                chiTietSuDungDichVu.getDaThanhToan(),
+                chiTietSuDungDichVu.getChiTietPhieuThue().getPhong().getMaPhong()
+        );
     }
 
     private ChiTietPhuThuResponse convertChiTietPhuThuToResponse(ChiTietPhuThu chiTietPhuThu) {
-        return new ChiTietPhuThuResponse(chiTietPhuThu.getIdChiTietPhuThuEmb().getIdChiTietPhieuThue(),
-                chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
+        return new ChiTietPhuThuResponse(
+                chiTietPhuThu.getIdChiTietPhuThu(),
+                chiTietPhuThu.getChiTietPhieuThue().getIdChiTietPhieuThue(),
+                chiTietPhuThu.getPhuThu().getIdPhuThu(),
                 chiTietPhuThu.getPhuThu().getNoiDung(),
                 chiTietPhuThu.getSoLuong(),
                 chiTietPhuThu.getNgayTao(),
-                chiTietPhuThu.getDonGia(), chiTietPhuThu.getDaThanhToan());
+                chiTietPhuThu.getDonGia(), chiTietPhuThu.getDaThanhToan(),
+                chiTietPhuThu.getChiTietPhieuThue().getPhong().getMaPhong()
+        );
     }
 
     private ChiTietPhieuThueResponse convertChiTietPhieuThueToResponse(ChiTietPhieuThue chiTietPhieuThue) throws Exception {

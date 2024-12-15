@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChiTietPhuThuResponse {
+    private Integer idChiTietPhuThu;
     private Integer idChiTietPhieuThue;
     private Integer idPhuThu;
     private String noiDung;
@@ -17,4 +18,5 @@ public class ChiTietPhuThuResponse {
     private LocalDate ngayTao;
     private Long donGia;
     private Boolean daThanhToan;
+    private String maPhong;
 }

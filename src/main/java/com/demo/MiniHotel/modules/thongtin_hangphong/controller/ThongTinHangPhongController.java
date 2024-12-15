@@ -1,10 +1,12 @@
 package com.demo.MiniHotel.modules.thongtin_hangphong.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
+import com.demo.MiniHotel.dto.ThongTinHangPhongEntity;
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.phieudatphong.dto.ResultResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse2;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
 import lombok.RequiredArgsConstructor;
@@ -139,6 +141,20 @@ public class ThongTinHangPhongController {
     public ResponseEntity<List<ThongTinHangPhongAdminResponse>> getHangPhongAdminTheoThoiGian(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
                                                                                          @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
         List<ThongTinHangPhongAdminResponse> responses = thongTinHangPhongService.layThongTinHangPhongAdminTheoThoiGian(ngayDenDat, ngayDiDat);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @GetMapping("/thoi-gian-2")
+    public ResponseEntity<List<ThongTinHangPhongResponse2>> getHangPhongTheoThoiGian2(@RequestParam("ngayDenDat") LocalDate ngayDenDat,
+                                                                                      @RequestParam("ngayDiDat") LocalDate ngayDiDat) throws Exception {
+        List<ThongTinHangPhongResponse2> response2s = thongTinHangPhongService.getThongTinHangPhongTheoThoiGian2(ngayDenDat, ngayDiDat);
+        return new ResponseEntity<>(response2s, HttpStatus.OK);
+    }
+
+    @GetMapping("/allotment")
+    public ResponseEntity<List<ThongTinHangPhongEntity>> getThongTinHangPhongEntity(@RequestParam("ngayNhanPhong") LocalDate ngayNhanPhong,
+                                                                                   @RequestParam("ngayTraPhong") LocalDate ngayTraPhong) throws Exception {
+        List<ThongTinHangPhongEntity> responses = thongTinHangPhongService.getThongTinHangPhongEntity(ngayNhanPhong, ngayTraPhong);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

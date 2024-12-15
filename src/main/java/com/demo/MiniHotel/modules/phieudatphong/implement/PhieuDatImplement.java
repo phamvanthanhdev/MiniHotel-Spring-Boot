@@ -1,6 +1,6 @@
 package com.demo.MiniHotel.modules.phieudatphong.implement;
 
-import com.demo.MiniHotel.dto.Containts;
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.exception.AppException;
 import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.helper.EmailSenderService;
@@ -11,7 +11,6 @@ import com.demo.MiniHotel.modules.khachhang.dto.KhachHangRequest;
 import com.demo.MiniHotel.modules.khachhang.dto.KhachHangResponse;
 import com.demo.MiniHotel.modules.khachhang.service.IKhachHangService;
 import com.demo.MiniHotel.modules.phieudatphong.dto.*;
-import com.demo.MiniHotel.modules.phieudatphong.exception.SoLuongPhongTrongException;
 import com.demo.MiniHotel.modules.phieudatphong.service.IPhieuDatService;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
 import com.demo.MiniHotel.repository.PhieuDatPhongPagingRepository;
@@ -35,6 +34,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -57,13 +57,22 @@ public class PhieuDatImplement implements IPhieuDatService {
     @Value("${soNgayPhaiThanhToan}")
     long soNgayPhaiThanhToan;
 
+//    @Override
+//    public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception {
+//        KhachHangResponse khachHangResponse = khachHangService.addKhachHangDatPhong(request.getKhachHang());
+//        request.getPhieuDat().setIdKhachHang(khachHangResponse.getIdKhachHang());
+//
+//        return addNewPhieuDatPhong(request.getPhieuDat());
+//    }
+
     @Override
-    public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception {
+    public ApiResponse datPhongKhachSanBySP(PhieuDatThanhToanRequest request) throws Exception {
         KhachHangResponse khachHangResponse = khachHangService.addKhachHangDatPhong(request.getKhachHang());
         request.getPhieuDat().setIdKhachHang(khachHangResponse.getIdKhachHang());
 
-        return addNewPhieuDatPhong(request.getPhieuDat());
+        return bookingBySP(request.getPhieuDat());
     }
+
     @Override
     public PhieuDatPhong addNewPhieuDatPhong(PhieuDatRequest request) throws Exception {
         PhieuDatPhong phieuDatPhong = new PhieuDatPhong();
@@ -578,7 +587,8 @@ public class PhieuDatImplement implements IPhieuDatService {
     @Override
     public List<PhieuDatUserResponse> getPhieuDatPhongCccdTheoTrang(int pageNumber, int pageSize, String cccd) throws Exception {
         Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by("ngayBatDau").descending());
-        List<PhieuDatPhong> phieuDatPhongs = phieuDatPhongPagingRepository.findByKhachHang_Cmnd(cccd, page);
+//        List<PhieuDatPhong> phieuDatPhongs = phieuDatPhongPagingRepository.findByKhachHang_Cmnd(cccd, page);
+        List<PhieuDatPhong> phieuDatPhongs = phieuDatPhongPagingRepository.findByKhachHangForCheckin(cccd, page);
 
         List<PhieuDatUserResponse> responses = new ArrayList<>();
         for (PhieuDatPhong phieuDat:phieuDatPhongs) {
@@ -595,7 +605,7 @@ public class PhieuDatImplement implements IPhieuDatService {
 
     @Override
     public Integer getTongTrangPhieuDatPhongCccd(int pageSize, String cccd){
-        int tongPhieuDat = (int) repository.countByKhachHang_Cmnd(cccd);
+        int tongPhieuDat = (int) repository.countByKhachHangForCheckin(cccd);
         int tongTrang = tongPhieuDat / pageSize;
         if(tongPhieuDat % pageSize != 0)
             tongTrang += 1;
@@ -632,7 +642,7 @@ public class PhieuDatImplement implements IPhieuDatService {
 
     // Tự động hủy phiếu đặt quá hạn thanh toán
     @Override
-    public void tuDongHuyPhieuDats() throws MessagingException {
+    public void tuDongHuyPhieuDats() throws Exception {
         List<PhieuDatPhong> phieuDatPhongs = getAllPhieuDatPhong();
         for (PhieuDatPhong phieuDatPhong: phieuDatPhongs) {
             LocalDate ngayHienTai = LocalDate.now();
@@ -653,27 +663,35 @@ public class PhieuDatImplement implements IPhieuDatService {
 
     @Autowired
     private EmailSenderService senderService;
-    public void sendMailThongBaoHuyPhieuDat(int idPhieuDat, String emailKhachHang) throws MessagingException {
+    public void sendMailThongBaoHuyPhieuDat(int idPhieuDat, String emailKhachHang) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         senderService.sendSimpleEmail(emailKhachHang,
                 "Thông tin hủy phiếu đặt phòng khách sạn",
                 "Mã phiếu đặt " + idPhieuDat
-                + "\nHệ thống đã tự động hủy phiếu đặt phòng của bạn vì không thanh toán tạm ứng trong khoảng thời gian quy định."
+                + "\nHệ thống đã tự động hủy phiếu đặt phòng của bạn vì không thanh toán tạm ứng trong khoảng " +
+                        "thời gian quy định vào trước ngày " + phieuDatPhong.getNgayTao().plusDays(3).format(formatter)
         );
 
     }
 
     @Override
-    public void sendMailThongBaoDatPhong(int idPhieuDat, String emailKhachHang, List<ChiTietPhieuDat> chiTietPhieuDats) throws MessagingException {
+    public void sendMailThongBaoDatPhong(int idPhieuDat, String emailKhachHang, List<ChiTietPhieuDat> chiTietPhieuDats) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        int soNgay = (int) ChronoUnit.DAYS.between(phieuDatPhong.getNgayBatDau(), phieuDatPhong.getNgayTraPhong());
+        if(phieuDatPhong.getNgayBatDau().equals(phieuDatPhong.getNgayTraPhong()))
+            soNgay = 1;
         long tongTien = 0;
         String noiDungChiTietPhieuDat = "";
         int i = 0;
         for (ChiTietPhieuDat chiTiet:chiTietPhieuDats) {
-            tongTien += chiTiet.getSoLuong() * chiTiet.getDonGia();
+            tongTien += chiTiet.getSoLuong() * chiTiet.getDonGia() * soNgay;
             noiDungChiTietPhieuDat += (i + 1) + ". "
                     + chiTiet.getHangPhong().getTenHangPhong()
                     + ", Số lượng: " + chiTiet.getSoLuong()
                     + ", Đơn giá: " + chiTiet.getDonGia() + " VND"
-                    + ", Thành tiền: "+ chiTiet.getSoLuong() * chiTiet.getDonGia() + " VND";
+                    + ", Thành tiền: "+ chiTiet.getSoLuong() * chiTiet.getDonGia() * soNgay + " VND";
             if(i < chiTietPhieuDats.size() - 1)
                 noiDungChiTietPhieuDat += "\n";
             i++;
@@ -688,6 +706,220 @@ public class PhieuDatImplement implements IPhieuDatService {
         );
 
         log.info("Send mail to " + emailKhachHang + " with id " + idPhieuDat);
+    }
+
+    @Override
+    public List<QuanLyPhieuDatResponse> getPhieuDatKhachHangFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, int trangThai, Integer idPhieuDat) throws Exception {
+        var context = SecurityContextHolder.getContext();
+        String username = context.getAuthentication().getName();
+        TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhap(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        KhachHang khachHang = taiKhoan.getKhachHang();
+
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("PhieuDatKhachHangFilter", PhieuDatPhong.class)
+                .registerStoredProcedureParameter("lua_chon", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_bat_dau_loc", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("ngay_ket_thuc_loc", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("trang_thai", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("idphieu_dat", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("idkhach_hang", Integer.class, ParameterMode.IN)
+                .setParameter("lua_chon", luaChon)
+                .setParameter("ngay_bat_dau_loc", ngayBatDauLoc)
+                .setParameter("ngay_ket_thuc_loc", ngayKetThucLoc)
+                .setParameter("trang_thai", trangThai)
+                .setParameter("idphieu_dat", idPhieuDat)
+                .setParameter("idkhach_hang", khachHang.getIdKhachHang());
+        List<PhieuDatPhong> phieuDatPhongs = query.getResultList();
+        List<QuanLyPhieuDatResponse> responses = new ArrayList<>();
+        for (PhieuDatPhong phieuDat:phieuDatPhongs) {
+            long tongTien = 0;
+            for (ChiTietPhieuDat chiTiet:phieuDat.getChiTietPhieuDats()) {
+                tongTien += chiTiet.getDonGia() * chiTiet.getSoLuong();
+            }
+            long soNgayThue = ChronoUnit.DAYS.between(phieuDat.getNgayBatDau(), phieuDat.getNgayTraPhong());
+            responses.add(getQuanLyPhieuDatResponse(phieuDat, tongTien * soNgayThue));
+        }
+
+        return responses;
+    }
+
+    // Khoi phuc phieu dat sau khi da huy
+    @Override
+    public ApiResponse khoiPhucPhieuDat(int idPhieuDat) throws Exception {
+        PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+        LocalDate ngayHienTai = LocalDate.now();
+        if(phieuDatPhong.getNgayBatDau().isBefore(ngayHienTai)){
+            throw new AppException(ErrorCode.THOIGIAN_NOT_VALID);
+        }
+
+        List<ChiTietPhieuDat> chiTietPhieuDats = phieuDatPhong.getChiTietPhieuDats();
+        String message = "";
+        for (ChiTietPhieuDat chiTietPhieuDat:chiTietPhieuDats) {
+            int soLuongTrong = thongTinHangPhongService.laySoLuongHangPhongTrong(
+                    phieuDatPhong.getNgayBatDau(), phieuDatPhong.getNgayTraPhong(), chiTietPhieuDat.getHangPhong().getIdHangPhong());
+            if(soLuongTrong < chiTietPhieuDat.getSoLuong()){
+//                throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+                message += ", " + chiTietPhieuDat.getHangPhong().getTenHangPhong() + " chỉ còn lại " + soLuongTrong + " phòng";
+            }
+        }
+
+        if(!message.equals("")){
+            message = "Không đủ hạng phòng trống" + message;
+            return ApiResponse.builder()
+                    .code(1000)
+                    .message(message)
+                    .build();
+        }else {
+            phieuDatPhong.setTrangThaiHuy(0);
+            phieuDatPhong.setTienTraLai(0L);
+
+            repository.save(phieuDatPhong);
+
+            return ApiResponse.builder()
+                    .code(200)
+                    .result(getCapNhatPhieuDatById(phieuDatPhong.getIdPhieuDat()))
+                    .build();
+        }
+    }
+
+    @Override
+    public PhieuDatPhong datPhongKhachSan2(PhieuDatRequest request) throws Exception {
+        if(request.getNgayBatDau().isAfter(request.getNgayTraPhong()) || request.getNgayBatDau().isBefore(LocalDate.now()))
+            throw new AppException(ErrorCode.THOIGIAN_NOT_VALID);
+        PhieuDatPhong phieuDatPhong = new PhieuDatPhong();
+        phieuDatPhong.setNgayBatDau(request.getNgayBatDau());
+        phieuDatPhong.setNgayTraPhong(request.getNgayTraPhong());
+        phieuDatPhong.setGhiChu(request.getGhiChu());
+        phieuDatPhong.setNgayTao(LocalDate.now());
+        phieuDatPhong.setTienTamUng(request.getTienTamUng());
+        phieuDatPhong.setTrangThaiHuy(0);
+
+        KhachHang khachHang = khachHangService.getKhachHangById(request.getIdKhachHang());
+        phieuDatPhong.setKhachHang(khachHang);
+
+        //Kiểm tra số lượng hạng phòng trống có đủ để đặt
+        for (ChiTietRequest chiTietRequest: request.getChiTietRequests()) {
+            if (!thongTinHangPhongService.kiemTraPhongHangPhongTrong(chiTietRequest.getIdHangPhong(), request.getNgayBatDau(),
+                    request.getNgayTraPhong(), chiTietRequest.getSoLuong())) {
+                throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+            }
+        }
+
+        PhieuDatPhong newPhieuDat = repository.save(phieuDatPhong);
+        //Luu chi tiet phieu dat
+        List<ChiTietPhieuDat> chiTietPhieuDats = new ArrayList<>();
+        for (ChiTietRequest chiTietRequest: request.getChiTietRequests()) {
+            if(chiTietRequest.getSoLuong() > 0) {
+                ChiTietPhieuDatRequest chiTietPhieuDatRequest = new ChiTietPhieuDatRequest();
+                chiTietPhieuDatRequest.setIdPhieuDat(newPhieuDat.getIdPhieuDat());
+                chiTietPhieuDatRequest.setIdHangPhong(chiTietRequest.getIdHangPhong());
+                chiTietPhieuDatRequest.setSoLuong(chiTietRequest.getSoLuong());
+                Long donGia = thongTinHangPhongService.getDonGiaThongTinHangPhongById(chiTietRequest.getIdHangPhong());
+                chiTietPhieuDatRequest.setDonGia(donGia);
+
+                chiTietPhieuDats.add(chiTietPhieuDatService.addNewChiTietPhieuDat(chiTietPhieuDatRequest));
+            }
+        }
+
+        // Gửi mail thông báo
+        sendMailThongBaoDatPhong(newPhieuDat.getIdPhieuDat(), khachHang.getEmail(),
+                chiTietPhieuDats);
+
+        return newPhieuDat;
+    }
+
+    @Override
+    public ApiResponse bookingBySP(PhieuDatRequest request) throws Exception{
+        if(CollectionUtils.isEmpty(request.getChiTietRequests())){
+            throw new AppException(ErrorCode.PHIEUDAT_VALID);
+        }
+        StringBuilder idHangPhongList= new StringBuilder();
+        StringBuilder soLuongList= new StringBuilder();
+        StringBuilder donGiaList=new StringBuilder();
+        for (ChiTietRequest chiTiet: request.getChiTietRequests()) {
+            if(chiTiet.getSoLuong() > 0) {
+                idHangPhongList.append(chiTiet.getIdHangPhong()).append(",");
+                soLuongList.append(chiTiet.getSoLuong()).append(",");
+                donGiaList.append(chiTiet.getDonGia()).append(",");
+            }
+        }
+
+        idHangPhongList = new StringBuilder(idHangPhongList.substring(0, idHangPhongList.length() - 1));
+        soLuongList = new StringBuilder(soLuongList.substring(0, soLuongList.length() - 1));
+        donGiaList = new StringBuilder(donGiaList.substring(0, donGiaList.length() - 1));
+
+        int idPhieuDat = getNewIdPhieuDat();
+        LocalDate ngayTao = LocalDate.now();
+        int trangThaiHuy = 0;
+        long tienTraLai = 0;
+        boolean result = runSPBooking(idHangPhongList.toString(), soLuongList.toString(), donGiaList.toString(),
+                idPhieuDat, request.getIdKhachHang(), request.getIdNhanVien()
+                ,request.getNgayBatDau(), request.getNgayTraPhong(), request.getGhiChu()
+                ,ngayTao, request.getTienTamUng(), trangThaiHuy, tienTraLai);
+
+        if(result){
+            PhieuDatPhong phieuDatPhong = getPhieuDatPhongById(idPhieuDat);
+            sendMailThongBaoDatPhong(phieuDatPhong.getIdPhieuDat(), phieuDatPhong.getKhachHang().getEmail(),phieuDatPhong.getChiTietPhieuDats());
+
+            return ApiResponse.builder()
+                    .code(200)
+                    .message("Đặt phòng thành công")
+                    .result(idPhieuDat)
+                    .build();
+        }else{
+            throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+        }
+    }
+
+    private int getNewIdPhieuDat() {
+        List<PhieuDatPhong> phieuDatPhongs = repository.findAll();
+        Collections.sort(phieuDatPhongs, new Comparator<PhieuDatPhong>() {
+            @Override
+            public int compare(PhieuDatPhong o1, PhieuDatPhong o2) {
+                return o1.getIdPhieuDat() < o2.getIdPhieuDat() ? 1 : -1;
+            }
+        });
+
+        return phieuDatPhongs.get(0).getIdPhieuDat() + 1;
+    }
+
+
+    public boolean runSPBooking(String idHangPhongList, String soLuongList, String donGiaList,
+                                int idPhieuDat, int idKhachHang, Integer idNhanVien, LocalDate ngayNhanPhong,
+                                LocalDate ngayTraPhong, String ghiChu, LocalDate ngayTao, long tienTamUng,
+                                int trangThaiHuy, long tienTraLai) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("sp_booking")
+                .registerStoredProcedureParameter("input_idhangphongs", String.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("input_soluongs", String.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("input_dongias", String.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_idphieu_dat", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_idkhach_hang", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_idnhan_vien", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_ngay_bat_dau", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_ngay_tra_phong", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_ghi_chu", String.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_ngay_tao", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_tien_tam_ung", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_trang_thai_huy", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_tien_tra_lai", Integer.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("is_enough", Boolean.class, ParameterMode.OUT)
+                .setParameter("input_idhangphongs", idHangPhongList)
+                .setParameter("input_soluongs", soLuongList)
+                .setParameter("input_dongias", donGiaList)
+                .setParameter("in_idphieu_dat", idPhieuDat)
+                .setParameter("in_idkhach_hang", idKhachHang)
+                .setParameter("in_idnhan_vien", idNhanVien)
+                .setParameter("in_ngay_bat_dau", ngayNhanPhong)
+                .setParameter("in_ngay_tra_phong", ngayTraPhong)
+                .setParameter("in_ghi_chu", ghiChu)
+                .setParameter("in_ngay_tao", ngayTao)
+                .setParameter("in_tien_tam_ung", tienTamUng)
+                .setParameter("in_trang_thai_huy", trangThaiHuy)
+                .setParameter("in_tien_tra_lai", tienTraLai);
+
+        query.execute();
+
+        return (boolean) query.getOutputParameterValue("is_enough");
     }
 
     public PhieuDatResponse getPhieuDatResponse(PhieuDatPhong phieuDatPhong) throws Exception {

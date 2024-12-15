@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChiTietDichVuPhongResponse {
+    Integer idChiTietSuDungDichVu;
     Integer idChiTietPhieuThue;
     Integer idDichVu;
     String tenDichVu;

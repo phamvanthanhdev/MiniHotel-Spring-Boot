@@ -64,10 +64,11 @@ public class KieuPhongImplement implements IKieuPhongService {
         List<KieuPhong> kieuPhongs = repository.findAll();
         List<KieuPhongResponse> kieuPhongResponses = new ArrayList<>();
         for (KieuPhong kieuPhong: kieuPhongs) {
-            int soLuong = 0;
-            for (HangPhong hangPhong:kieuPhong.getHangPhongs()) {
-                soLuong += hangPhong.getPhongs().size();
-            }
+//            int soLuong = 0;
+//            for (HangPhong hangPhong:kieuPhong.getHangPhongs()) {
+//                soLuong += hangPhong.getPhongs().size();
+//            }
+            int soLuong = kieuPhong.getHangPhongs().size();
             kieuPhongResponses.add(convertKieuPhongResponse(kieuPhong, soLuong));
         }
         return kieuPhongResponses;

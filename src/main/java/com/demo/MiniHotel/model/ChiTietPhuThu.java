@@ -17,19 +17,34 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChiTietPhuThu {
-    @JsonIgnore
-    @EmbeddedId
-    private IdChiTietPhuThuEmb idChiTietPhuThuEmb;
+//    @JsonIgnore
+//    @EmbeddedId
+//    private IdChiTietPhuThuEmb idChiTietPhuThuEmb;
+//
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @MapsId("idChiTietPhieuThue")
+//    @JoinColumn(name = "idchitiet_phieuthue", nullable = false)
+//    private ChiTietPhieuThue chiTietPhieuThue;
+//
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @MapsId("idPhuThu")
+//    @JoinColumn(name = "idphu_thu", nullable = false)
+//    private PhuThu phuThu;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idchitiet_phuthu")
+    private Integer idChiTietPhuThu;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("idChiTietPhieuThue")
     @JoinColumn(name = "idchitiet_phieuthue", nullable = false)
     private ChiTietPhieuThue chiTietPhieuThue;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("idPhuThu")
     @JoinColumn(name = "idphu_thu", nullable = false)
     private PhuThu phuThu;
 

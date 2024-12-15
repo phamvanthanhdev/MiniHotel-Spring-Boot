@@ -32,6 +32,8 @@ public class SecurityConfig {
             "/api/tai-khoan/introspect",
             "/api/payment/create_payment",
             "/api/phieu-dat/dat-phong",
+            "/api/phieu-dat/dat-phong-3",
+
     };
 
     private final String[] PUBLIC_ENDPOINT_GET= {
@@ -45,6 +47,8 @@ public class SecurityConfig {
             "/api/payment/payment-update",
             "/api/khach-hang/download",
             "/api/kieu-phong/so-luong",
+            "/api/thong-tin-hang-phong/allotment",
+
 };
     @Value("${jwt.signerKey}")
     private String SIGNER_KEY;

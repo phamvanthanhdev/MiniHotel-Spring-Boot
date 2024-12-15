@@ -1,8 +1,10 @@
 package com.demo.MiniHotel.modules.thongtin_hangphong.service;
 
+import com.demo.MiniHotel.dto.ThongTinHangPhongEntity;
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse2;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 
 import java.time.LocalDate;
@@ -31,4 +33,8 @@ public interface IThongTinHangPhongService {
                                                                         Long giaMin, Long giaMax) throws Exception;
     public List<ThongTinHangPhongUserResponse> timKiemThongTinHangPhongUser(LocalDate ngayDenDat, LocalDate ngayDiDat,
                                                                             Long giaMin, Long giaMax, String noiDung) throws Exception;
+
+    public List<ThongTinHangPhongResponse2> getThongTinHangPhongTheoThoiGian2(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception;
+    public List<ThongTinHangPhongEntity> getThongTinHangPhongEntity(LocalDate ngayNhanPhong, LocalDate ngayTraPhong);
+
 }

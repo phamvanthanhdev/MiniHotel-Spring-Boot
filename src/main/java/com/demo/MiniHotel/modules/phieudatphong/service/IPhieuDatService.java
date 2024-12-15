@@ -1,14 +1,13 @@
 package com.demo.MiniHotel.modules.phieudatphong.service;
 
+import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietPhieuDat;
-import com.demo.MiniHotel.model.HoaDon;
 import com.demo.MiniHotel.model.PhieuDatPhong;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatRequest;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietPhieuDatResponse2;
 import com.demo.MiniHotel.modules.chitiet_phieudat.dto.ChiTietUserResponse;
 import com.demo.MiniHotel.modules.phieudatphong.dto.*;
-import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
 import com.demo.MiniHotel.vnpay.PhieuDatThanhToanRequest;
 import jakarta.mail.MessagingException;
 
@@ -16,7 +15,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface IPhieuDatService {
-    public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception;
+//    public PhieuDatPhong datPhongKhachSan(PhieuDatThanhToanRequest request) throws Exception;
+    ApiResponse datPhongKhachSanBySP(PhieuDatThanhToanRequest request) throws Exception;
     public PhieuDatPhong addNewPhieuDatPhong(PhieuDatRequest request) throws Exception;
     public PhieuDatPhong thanhToanPhieuDat(Integer id, Long tienTamUng) throws Exception;
     public List<PhieuDatPhong> getAllPhieuDatPhong();
@@ -52,6 +52,15 @@ public interface IPhieuDatService {
     List<PhieuDatUserResponse> getPhieuDatPhongCccdTheoTrang(int pageNumber, int pageSize, String cccd) throws Exception;
     Integer getTongTrangPhieuDatPhongCccd(int pageSize, String cccd);
     List<QuanLyPhieuDatResponse> getPhieuDatFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, int trangThai, String noiDung) throws Exception;
-    void tuDongHuyPhieuDats() throws MessagingException;
-    void sendMailThongBaoDatPhong(int idPhieuDat, String emailKhachHang, List<ChiTietPhieuDat> chiTietPhieuDats) throws MessagingException;
+    void tuDongHuyPhieuDats() throws Exception;
+    void sendMailThongBaoDatPhong(int idPhieuDat, String emailKhachHang, List<ChiTietPhieuDat> chiTietPhieuDats) throws Exception;
+    List<QuanLyPhieuDatResponse> getPhieuDatKhachHangFilter(int luaChon, LocalDate ngayBatDauLoc, LocalDate ngayKetThucLoc, int trangThai, Integer idPhieuDat) throws Exception;
+    ApiResponse khoiPhucPhieuDat(int idPhieuDat) throws Exception;
+
+    PhieuDatPhong datPhongKhachSan2(PhieuDatRequest request) throws Exception;
+    public ApiResponse bookingBySP(PhieuDatRequest request) throws Exception;
+//    public boolean runSPBooking(String idHangPhongList, String soLuongList, String donGiaList,
+//                                int idPhieuDat, int idKhachHang, Integer idNhanVien, LocalDate ngayNhanPhong,
+//                                LocalDate ngayTraPhong, String ghiChu, LocalDate ngayTao, long tienTamUng,
+//                                int trangThaiHuy, long tienTraLai);
 }

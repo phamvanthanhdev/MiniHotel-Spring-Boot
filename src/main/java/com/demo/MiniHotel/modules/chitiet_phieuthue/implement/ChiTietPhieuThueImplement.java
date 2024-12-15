@@ -299,9 +299,16 @@ public class ChiTietPhieuThueImplement implements IChiTietPhieuThueService {
         if(thongTinPhongService.kiemTraPhongThue(request.getNgayDen(), request.getNgayDi(), request.getMaPhong()))
             throw new AppException(ErrorCode.PHONG_NOT_AVAIL);
 
+        //kiểm tra số lượng hạng phòng trống
+        Phong phong = phongService.getPhongById(request.getMaPhong());
+        int soLuongTrong = thongTinHangPhongService.laySoLuongHangPhongTrong(request.getNgayDen(), request.getNgayDi(), phong.getHangPhong().getIdHangPhong());
+        if(soLuongTrong < 1){
+            throw new AppException(ErrorCode.HANGPHONG_NOT_ENOUGH);
+        }
+
         ChiTietPhieuThue chiTietPhieuThue = new ChiTietPhieuThue();
 
-        Phong phong = phongService.getPhongById(request.getMaPhong());
+
         PhieuThuePhong phieuThuePhong = PhieuThuePhongRepository.findById(request.getIdPhieuThue())
                 .orElseThrow(() -> new AppException(ErrorCode.PHIEUTHUE_NOT_FOUND));
 

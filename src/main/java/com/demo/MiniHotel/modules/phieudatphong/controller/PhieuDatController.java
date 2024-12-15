@@ -46,7 +46,7 @@ public class PhieuDatController {
     public ResponseEntity<ResultResponse> datPhongKhachSan(@RequestBody PhieuDatThanhToanRequest request){
         ResultResponse response;
         try {
-            PhieuDatPhongService.datPhongKhachSan(request);
+            PhieuDatPhongService.datPhongKhachSanBySP(request);
         }catch (SoLuongPhongTrongException ex){
             response = new ResultResponse(400, ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -281,6 +281,40 @@ public class PhieuDatController {
                 .code(200)
                 .result(responses)
                 .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/khach-hang/filter")
+    public ResponseEntity<ApiResponse> getPhieuDatPhongKhachHangFilter(@RequestBody PhieuDatKhachHangFilterRequest request) throws Exception {
+        List<QuanLyPhieuDatResponse> responses = PhieuDatPhongService.getPhieuDatKhachHangFilter(request.getLuaChon(),
+                request.getNgayBatDauLoc(), request.getNgayKetThucLoc(), request.getTrangThai(), request.getIdPhieuDat());
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(responses)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<ApiResponse> khoiPhucPhieuDat(@PathVariable Integer id) throws Exception {
+        ApiResponse apiResponse = PhieuDatPhongService.khoiPhucPhieuDat(id);
+        return new ResponseEntity<>(apiResponse,
+                HttpStatus.OK);
+    }
+
+    // Nhan vien dat phong
+    @PostMapping("/dat-phong-2")
+    public ResponseEntity<ApiResponse> datPhongKhachSan2(@RequestBody PhieuDatRequest request) throws Exception {
+        PhieuDatPhong phieuDatPhong = PhieuDatPhongService.datPhongKhachSan2(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(phieuDatPhong)
+                .build(), HttpStatus.OK);
+    }
+
+    // by SP_Booking
+    @PostMapping("/dat-phong-3")
+    public ResponseEntity<ApiResponse> datPhongKhachSan3(@RequestBody PhieuDatRequest request) throws Exception {
+        ApiResponse apiResponse = PhieuDatPhongService.bookingBySP(request);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
     //Nhan vien xac nhan don dat phong

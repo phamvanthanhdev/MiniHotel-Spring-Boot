@@ -2,6 +2,7 @@ package com.demo.MiniHotel.modules.nhanvien.implement;
 
 import com.demo.MiniHotel.exception.AppException;
 import com.demo.MiniHotel.exception.ErrorCode;
+import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDangNhapResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienDetailsResponse;
 import com.demo.MiniHotel.modules.nhanvien.dto.NhanVienRequest;
 import com.demo.MiniHotel.model.BoPhan;
@@ -150,6 +151,19 @@ public class NhanVienImplement implements INhanVienService {
         NhanVien nhanVien = getNhanVienById(id);
 
         return convertNhanVienDetailsResponse(nhanVien);
+    }
+
+    @Override
+    public NhanVienDangNhapResponse getThongTinNhanVienDangNhapByToken() throws Exception {
+        return convertNhanVienDangNhapResponse(getNhanVienByToken());
+    }
+
+    private NhanVienDangNhapResponse convertNhanVienDangNhapResponse(NhanVien nhanVien){
+        return NhanVienDangNhapResponse.builder()
+                .idNhanVien(nhanVien.getIdNhanVien())
+                .hoTen(nhanVien.getHoTen())
+                .tenNhomQuyen(nhanVien.getTaiKhoan().getNhomQuyen().getTenNhomQuyen())
+                .build();
     }
 
     private NhanVienResponse convertNhanVienResponse(NhanVien nhanVien){

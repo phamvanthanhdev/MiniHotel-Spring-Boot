@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class ChiTietPhuThuRequest {
+    private Integer idChiTietPhuThu;
     private Integer idPhuThu;
     private Integer idChiTietPhieuThue;
     private Integer soLuong;

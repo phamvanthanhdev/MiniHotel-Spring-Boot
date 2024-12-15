@@ -2,9 +2,11 @@ package com.demo.MiniHotel.modules.chitiet_phieuthue.controller;
 
 import com.demo.MiniHotel.dto.ApiResponse;
 import com.demo.MiniHotel.model.ChiTietPhieuThue;
+import com.demo.MiniHotel.model.ChiTietPhuThu;
 import com.demo.MiniHotel.model.ChiTietSuDungDichVu;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.dto.*;
 import com.demo.MiniHotel.modules.chitiet_phieuthue.service.IChiTietPhieuThueService;
+import com.demo.MiniHotel.modules.chitiet_phuthu.dto.CapNhatChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
 import com.demo.MiniHotel.modules.chitiet_phuthu.service.IChiTietPhuThuService;
@@ -231,6 +233,31 @@ public class ChiTietPhieuThueController {
         return new ResponseEntity<>(ApiResponse.builder()
                 .code(200)
                 .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @PutMapping("/phu-thu")
+    public ResponseEntity<ApiResponse> capNhatChiTietPhuThu(@RequestBody CapNhatChiTietPhuThuRequest request) throws Exception {
+        ChiTietPhuThu response = chiTietPhuThuService.capNhatChiTietPhuThu(request);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .result(response)
+                .build(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/dich-vu")
+    public ResponseEntity<ApiResponse> xoaChiTietSuDungDichVu(@RequestParam int idChiTietSuDungDichVu) throws Exception {
+        chiTietSuDungDichVuService.xoaChiTietSuDungDichVu(idChiTietSuDungDichVu);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
+                .build(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/phu-thu")
+    public ResponseEntity<ApiResponse> xoaChiTietPhuThu(@RequestParam int idChiTietPhuThu) throws Exception {
+        chiTietPhuThuService.xoaChiTietPhuThu(idChiTietPhuThu);
+        return new ResponseEntity<>(ApiResponse.builder()
+                .code(200)
                 .build(), HttpStatus.OK);
     }
 }

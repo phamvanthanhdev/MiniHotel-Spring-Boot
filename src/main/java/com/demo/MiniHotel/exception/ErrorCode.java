@@ -17,7 +17,7 @@ public enum ErrorCode {
     DIACHI_INVALID(1009, "Địa chỉ không được bỏ trống"),
     EMAIL_INVALID(1010, "Email chưa đúng định dạng"),
     USER_NOT_EXISTED(1011, "Tài khoản không tồn tại"),
-    AUTHENTICATED(1012, "Lỗi xác thực"),
+    AUTHENTICATED(1012, "Thông tin tài khoản không hợp lệ"),
     NHOMQUYEN_NOT_FOUND(1013, "Nhóm quyền không tồn tại"),
     GIOITINH_INVALID(1014, "Giới tính không được bỏ trống"),
     NGAYSINH_INVALID(1015, "Ngày sinh không được bỏ trống"),
@@ -73,6 +73,10 @@ public enum ErrorCode {
     CHITIETPHIEUDAT_NOTFOUND(1063, "Chi tiết phiếu đặt không tồn tại"),
     PHIEUDAT_NOTFOUND(1064, "Phiếu đặt không tồn tại"),
     CHITIETDICHVU_NOTFOUND(1064, "Chi tiết sử dụng dịch vụ không tồn tại"),
+    CHITIETPHUTHU_NOTFOUND(1064, "Chi tiết phụ thu không tồn tại"),
+    TAIKHOAN_NOTFOUND(1064, "Tài khoản không tồn tại"),
+    CHITIETDICHVU_DATHANHTOAN(1065, "Chi tiết dịch vụ đã thanh toán, không thể xóa"),
+    PHIEUDAT_VALID(1065, "Chưa chọn hạng phòng nào"),
     ;
     private int code;
     private String message;

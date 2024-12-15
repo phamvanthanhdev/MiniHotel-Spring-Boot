@@ -1,8 +1,13 @@
 package com.demo.MiniHotel.modules.thongtin_hangphong.implement;
 
+import com.demo.MiniHotel.dto.ThongTinHangPhongEntity;
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
+import com.demo.MiniHotel.model.HangPhong;
 import com.demo.MiniHotel.model.ThongTinHangPhong;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongAdminResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse;
+import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongResponse2;
 import com.demo.MiniHotel.modules.thongtin_hangphong.dto.ThongTinHangPhongUserResponse;
 import com.demo.MiniHotel.modules.thongtin_hangphong.service.IThongTinHangPhongService;
 import com.demo.MiniHotel.repository.ThongTinHangPhongRepository;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -146,12 +152,12 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
     @Override
     public List<ThongTinHangPhongUserResponse> getThongTinHangPhongTheoThoiGian(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception {
         List<ThongTinHangPhong> thongTinHangPhongs = repository.findAll();
-        List<ThongTinHangPhongUserResponse> response2s = new ArrayList<>();
+        List<ThongTinHangPhongUserResponse> responses = new ArrayList<>();
         for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
             int soLuongTrong = laySoLuongHangPhongTrong(ngayDenDat, ngayDiDat, thongTinHangPhong.getIdHangPhong());
-            response2s.add(convertThongTinHangPhongUserResponse(thongTinHangPhong, soLuongTrong));
+            responses.add(convertThongTinHangPhongUserResponse(thongTinHangPhong, soLuongTrong));
         }
-        return response2s;
+        return responses;
     }
 
     @Override
@@ -257,7 +263,8 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
         List<ThongTinHangPhongUserResponse> thongTinHangPhongUserResponses = getThongTinHangPhongTheoThoiGian(ngayDenDat, ngayDiDat);
         List<ThongTinHangPhongUserResponse> thongTinHangPhongTimKiem = new ArrayList<>();
         for (ThongTinHangPhongUserResponse thongTinHangPhong: thongTinHangPhongUserResponses) {
-            if(thongTinHangPhong.getGiaGoc() >= giaMin && thongTinHangPhong.getGiaGoc() <= giaMax ) {
+            long gia = thongTinHangPhong.getPhanTramGiam() > 0 ? thongTinHangPhong.getGiaKhuyenMai() : thongTinHangPhong.getGiaGoc();
+            if(gia >= giaMin && gia <= giaMax ) {
                 if (noiDung != null && !noiDung.trim().equals("")) {
                     if(thongTinHangPhong.getTenKieuPhong().contains(noiDung)
                         || thongTinHangPhong.getTenLoaiPhong().contains(noiDung)
@@ -270,6 +277,34 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
             }
         }
         return thongTinHangPhongTimKiem;
+    }
+
+    @Override
+    public List<ThongTinHangPhongResponse2> getThongTinHangPhongTheoThoiGian2(LocalDate ngayDenDat, LocalDate ngayDiDat) throws Exception {
+        if(ngayDenDat.isAfter(ngayDiDat) || ngayDenDat.isBefore(LocalDate.now()))
+            throw new AppException(ErrorCode.THOIGIAN_NOT_VALID);
+
+        List<ThongTinHangPhong> thongTinHangPhongs = repository.findAll();
+        List<ThongTinHangPhongResponse2> response2s = new ArrayList<>();
+        for (ThongTinHangPhong thongTinHangPhong: thongTinHangPhongs) {
+            int soLuongTrong = laySoLuongHangPhongTrong(ngayDenDat, ngayDiDat, thongTinHangPhong.getIdHangPhong());
+            int soNgay = (int) ChronoUnit.DAYS.between(ngayDenDat, ngayDiDat);
+            if(ngayDenDat.isEqual(ngayDiDat))
+                soNgay = 1;
+            response2s.add(convertThongTinHangPhongResponse2(thongTinHangPhong, soLuongTrong, soNgay));
+        }
+        return response2s;
+    }
+
+    @Override
+    public List<ThongTinHangPhongEntity> getThongTinHangPhongEntity(LocalDate ngayNhanPhong, LocalDate ngayTraPhong){
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("sp_allotment", ThongTinHangPhongEntity.class)
+                .registerStoredProcedureParameter("in_ngay_nhan_phong", LocalDate.class, ParameterMode.IN)
+                .registerStoredProcedureParameter("in_ngay_tra_phong", LocalDate.class, ParameterMode.IN)
+                .setParameter("in_ngay_nhan_phong", ngayNhanPhong)
+                .setParameter("in_ngay_tra_phong", ngayTraPhong);
+
+        return query.getResultList();
     }
 
     public ThongTinHangPhongUserResponse convertThongTinHangPhongUserResponse(ThongTinHangPhong thongTinHangPhong, int soLuongTrong) throws Exception {
@@ -304,5 +339,19 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
                 thongTinHangPhong.getGiaGoc(), thongTinHangPhong.getGiaKhuyenMai());
     }
 
-
+    public ThongTinHangPhongResponse2 convertThongTinHangPhongResponse2(ThongTinHangPhong thongTinHangPhong, int soLuongTrong, int soNgay) throws Exception {
+        long tongTien = soNgay * (thongTinHangPhong.getPhanTramGiam() > 0 ? thongTinHangPhong.getGiaKhuyenMai() : thongTinHangPhong.getGiaGoc());
+        return ThongTinHangPhongResponse2.builder()
+                .idHangPhong(thongTinHangPhong.getIdHangPhong())
+                .tenHangPhong(thongTinHangPhong.getTenHangPhong())
+                .soLuongTrong(soLuongTrong)
+                .giaGoc(thongTinHangPhong.getGiaGoc())
+                .giaKhuyenMai(thongTinHangPhong.getGiaKhuyenMai())
+                .soNgay(soNgay)
+                .tongTien(tongTien)
+                .tenKieuPhong(thongTinHangPhong.getTenKieuPhong())
+                .tenLoaiPhong(thongTinHangPhong.getTenLoaiPhong())
+                .soNguoiToiDa(thongTinHangPhong.getSoNguoiToiDa())
+                .build();
+    }
 }

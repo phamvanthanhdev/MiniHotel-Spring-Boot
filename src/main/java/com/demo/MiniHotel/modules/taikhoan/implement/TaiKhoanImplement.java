@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -215,6 +216,7 @@ public class TaiKhoanImplement implements ITaiKhoanService {
     @Override
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
+        // Check token valid
         String token = request.getToken();
 
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
@@ -223,9 +225,25 @@ public class TaiKhoanImplement implements ITaiKhoanService {
         boolean verify = signedJWT.verify(verifier);
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
+        boolean isValid = verify && expiryTime.after(new Date());
+
+        // Get role tai khoan
+        String role = getRoleInToken(token);
+
         return IntrospectResponse.builder()
-                .valid(verify && expiryTime.after(new Date()))
+                .valid(isValid)
+                .role(role)
                 .build();
+    }
+
+    public String getRoleInToken(String token){
+        try {
+            JWSObject jwsObject = JWSObject.parse(token);
+            JWTClaimsSet claims = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
+            return claims.getStringClaim("scope");
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid token");
+        }
     }
 
     @Override

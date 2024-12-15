@@ -19,14 +19,17 @@ public interface IChiTietSuDungDichVuService {
 //    public ChiTietSuDungDichVu getChiTietSuDungDichVuById(Integer id) throws Exception;
     public List<ChiTietSuDungDichVuResponse> getChiTietSuDungDichVuByIdChiTietPhieuThue(Integer idChiTietPhieuThue) throws Exception;
     public ChiTietSuDungDichVu updateChiTietDichVu(ChiTietSuDungDichVuRequest request) throws Exception;
-    public void deleteChiTietSuDungDichVu(IdChiTietSuDungDichVuEmb idChiTietSuDungDichVuEmb) throws Exception;
+    public void deleteChiTietSuDungDichVu(int idChiTietSuDungDichVu) throws Exception;
 //    public void deleteChiTietSuDungDichVuByIdPhieuThue(Integer idPhieuThue) throws Exception;
 
-    public ChiTietSuDungDichVu addHoaDonToChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu, String soHoaDon) throws Exception;
-    public HoaDon getHoaDonInChiTietSuDungDichVu(Integer idChiTietPhieuThue, Integer idDichVu) throws Exception;
+    public ChiTietSuDungDichVu addHoaDonToChiTietSuDungDichVu(Integer idChiTietSuDungDichVu, String soHoaDon) throws Exception;
+    public HoaDon getHoaDonInChiTietSuDungDichVu(Integer idChiTietSuDungDichVu) throws Exception;
     public List<ChiTietSuDungDichVu> thanhToanChiTietSuDungDVCuaChiTietPhieuThue(Integer idChiTietPhieuThue, String soHoaDon) throws Exception;
     long getTongTienChiTietSuDungDichVu(Integer idChiTietPhieuThue) throws Exception;
     List<ChiTietDichVuPhongResponse> getChiTietDichVuCuaPhieuThue(int idPhieuThue);
-    ChiTietSuDungDichVu getChiTietSuDungDichVuById(int idDichVu, int idChiTietPhieuThue);
+    ChiTietSuDungDichVu getChiTietSuDungDichVuById(int idChiTietSuDungDichVu);
     ChiTietSuDungDichVu capNhatChiTietSuDungDichVu(CapNhatChiTietSuDungDichVuRequest request);
+
+    void xoaChiTietSuDungDichVu(int idChiTietSuDungDichVu) throws Exception;
+
 }

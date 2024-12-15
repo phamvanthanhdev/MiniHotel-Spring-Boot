@@ -1,7 +1,10 @@
 package com.demo.MiniHotel.modules.chitiet_phuthu.implement;
 
 import com.demo.MiniHotel.embedded.IdChiTietPhuThuEmb;
+import com.demo.MiniHotel.exception.AppException;
+import com.demo.MiniHotel.exception.ErrorCode;
 import com.demo.MiniHotel.model.*;
+import com.demo.MiniHotel.modules.chitiet_phuthu.dto.CapNhatChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuPhongResponse;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuRequest;
 import com.demo.MiniHotel.modules.chitiet_phuthu.dto.ChiTietPhuThuResponse;
@@ -32,12 +35,11 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
     public List<ChiTietPhuThuResponse> themChiTietPhuThu(ChiTietPhuThuRequest request) throws Exception {
         //Kiem tra chi tiet phiếu thuê có sử dụng dịch vụ này hay chưa
         //Nếu đã sử dụng -> thêm số lượng, nếu chưa -> thêm mới
-        IdChiTietPhuThuEmb idChiTietPhuThuEmb =
-                new IdChiTietPhuThuEmb(request.getIdChiTietPhieuThue(), request.getIdPhuThu());
-        Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
+        Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findByChiTietPhieuThue_IdChiTietPhieuThueAndPhuThu_IdPhuThuAndDonGiaAndDaThanhToan(
+                request.getIdChiTietPhieuThue(), request.getIdPhuThu(), request.getDonGia(), request.getDaThanhToan()
+        );
         if(chiTietPhuThuOptional.isEmpty()) {
             ChiTietPhuThu chiTietPhuThuNew = new ChiTietPhuThu();
-            chiTietPhuThuNew.setIdChiTietPhuThuEmb(idChiTietPhuThuEmb);
             chiTietPhuThuNew.setDonGia(request.getDonGia());
             chiTietPhuThuNew.setNgayTao(LocalDate.now());
             chiTietPhuThuNew.setDaThanhToan(request.getDaThanhToan());
@@ -61,12 +63,8 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
             ChiTietPhuThu chiTietPhuThu = chiTietPhuThuOptional.get();
             chiTietPhuThu.setDaThanhToan(request.getDaThanhToan());
             chiTietPhuThu.setDonGia(request.getDonGia());
-            if(chiTietPhuThu.getSoLuong() + request.getSoLuong() <= 0){
-                deleteChiTietPhuThu(chiTietPhuThu.getIdChiTietPhuThuEmb());
-            }else {
-                chiTietPhuThu.setSoLuong(chiTietPhuThu.getSoLuong() + request.getSoLuong());
-                repository.save(chiTietPhuThu);
-            }
+            chiTietPhuThu.setSoLuong(chiTietPhuThu.getSoLuong() + request.getSoLuong());
+            repository.save(chiTietPhuThu);
         }
         return getChiTietPhuThuByIdChiTietPhieuThue(request.getIdChiTietPhieuThue());
     }
@@ -83,24 +81,13 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
         return responses;
     }
 
-    private ChiTietPhuThuResponse convertChiTietPhuThuToResponse(ChiTietPhuThu chiTietPhuThu) {
-        return new ChiTietPhuThuResponse(chiTietPhuThu.getIdChiTietPhuThuEmb().getIdChiTietPhieuThue(),
-                chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
-                chiTietPhuThu.getPhuThu().getNoiDung(),
-                chiTietPhuThu.getSoLuong(),
-                chiTietPhuThu.getNgayTao(),
-                chiTietPhuThu.getDonGia(), chiTietPhuThu.getDaThanhToan());
-    }
+
 
     @Override
     public ChiTietPhuThu updateChiTietDichVu(ChiTietPhuThuRequest request) throws Exception {
         IdChiTietPhuThuEmb idChiTietPhuThuEmb =
                 new IdChiTietPhuThuEmb(request.getIdChiTietPhieuThue(), request.getIdPhuThu());
-        Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
-        if(chiTietPhuThuOptional.isEmpty()){
-            throw new Exception("ChiTietPhuThu not found!");
-        }
-        ChiTietPhuThu chiTietPhuThu = chiTietPhuThuOptional.get();
+        ChiTietPhuThu chiTietPhuThu = getChiTietPhuThuById(request.getIdChiTietPhuThu());
         if(request.getDonGia() != null)
             chiTietPhuThu.setDonGia(request.getDonGia());
         if(request.getNgayTao() != null)
@@ -126,23 +113,14 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
     }
 
     @Override
-    public void deleteChiTietPhuThu(IdChiTietPhuThuEmb idChiTietPhuThuEmb) throws Exception {
-        /*IdChiTietPhuThuEmb idChiTietPhuThuEmb =
-                new IdChiTietPhuThuEmb(idChiTietPhieuThue, idDichVu);*/
-        Optional<ChiTietPhuThu> ChiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
-        if(ChiTietPhuThuOptional.isEmpty()){
-            throw new Exception("ChiTietPhuThu not found!");
-        }
-        repository.deleteById(idChiTietPhuThuEmb);
+    public void deleteChiTietPhuThu(Integer idChiTietPhuThu) throws Exception {
+        ChiTietPhuThu chiTietPhuThu = getChiTietPhuThuById(idChiTietPhuThu);
+        repository.deleteById(chiTietPhuThu.getIdChiTietPhuThu());
     }
 
     @Override
-    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhieuThue, Integer idPhuThu, String soHoaDon) throws Exception {
-        IdChiTietPhuThuEmb idChiTietPhuThuEmb =
-                new IdChiTietPhuThuEmb(idChiTietPhieuThue, idPhuThu);
-        Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
-        if(chiTietPhuThuOptional.isEmpty()) throw new Exception("ChiTietPhuThu not found.");
-        ChiTietPhuThu chiTietPhuThu = chiTietPhuThuOptional.get();
+    public ChiTietPhuThu addHoaDonToChiTietPhuThu(Integer idChiTietPhuThu, String soHoaDon) throws Exception {
+        ChiTietPhuThu chiTietPhuThu = getChiTietPhuThuById(idChiTietPhuThu);
         HoaDon hoaDon = hoaDonService.getHoaDonById(soHoaDon);
         chiTietPhuThu.setHoaDon(hoaDon);
         chiTietPhuThu.setDaThanhToan(true);
@@ -151,12 +129,8 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
     }
 
     @Override
-    public HoaDon getHoaDonInChiTietPhuThu(Integer idChiTietPhieuThue, Integer idDichVu) throws Exception {
-        IdChiTietPhuThuEmb idChiTietPhuThuEmb =
-                new IdChiTietPhuThuEmb(idChiTietPhieuThue, idDichVu);
-        Optional<ChiTietPhuThu> chiTietPhuThuOptional = repository.findById(idChiTietPhuThuEmb);
-        if(chiTietPhuThuOptional.isEmpty()) throw new Exception("ChiTietSuDungDV not found.");
-        return chiTietPhuThuOptional.get().getHoaDon();
+    public HoaDon getHoaDonInChiTietPhuThu(Integer idChiTietPhuThu) throws Exception {
+        return getChiTietPhuThuById(idChiTietPhuThu).getHoaDon();
     }
 
     @Override
@@ -164,8 +138,7 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
         List<ChiTietPhuThu> chiTietPhuThus = repository.findByChiTietPhieuThue_IdChiTietPhieuThue(idChiTietPhieuThue);
         for (ChiTietPhuThu chiTietPhuThu:chiTietPhuThus) {
             if(!chiTietPhuThu.getDaThanhToan()) {
-                addHoaDonToChiTietPhuThu(idChiTietPhieuThue,
-                        chiTietPhuThu.getIdChiTietPhuThuEmb().getIdPhuThu(),
+                addHoaDonToChiTietPhuThu(chiTietPhuThu.getIdChiTietPhuThu(),
                         soHoaDon);
             }
         }
@@ -189,9 +162,33 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
         return chiTietPhuThus.stream().map(this::convertChiTietPhuThuPhongToResponse).collect(Collectors.toList());
     }
 
+    @Override
+    public ChiTietPhuThu getChiTietPhuThuById(int idChiTietPhuThu) {
+        return repository.findById(idChiTietPhuThu).orElseThrow(
+                () -> new AppException(ErrorCode.CHITIETPHUTHU_NOTFOUND)
+        );
+    }
+
+
+    @Override
+    public ChiTietPhuThu capNhatChiTietPhuThu(CapNhatChiTietPhuThuRequest request) {
+        ChiTietPhuThu chiTietPhuThu =
+                getChiTietPhuThuById(request.getIdChiTietPhuThu());
+
+        chiTietPhuThu.setSoLuong(request.getSoLuong());
+        return repository.save(chiTietPhuThu);
+    }
+
+    @Override
+    public void xoaChiTietPhuThu(int idChiTietPhuThu) throws Exception {
+        ChiTietPhuThu chiTietPhuThu = getChiTietPhuThuById(idChiTietPhuThu);
+        repository.deleteById(chiTietPhuThu.getIdChiTietPhuThu());
+    }
+
     private ChiTietPhuThuPhongResponse convertChiTietPhuThuPhongToResponse(ChiTietPhuThu chiTietPhuThu) {
         ChiTietPhieuThue chiTietPhieuThue = chiTietPhuThu.getChiTietPhieuThue();
         return ChiTietPhuThuPhongResponse.builder()
+                .idChiTietPhuThu(chiTietPhuThu.getIdChiTietPhuThu())
                 .idChiTietPhieuThue(chiTietPhieuThue.getIdChiTietPhieuThue())
                 .idPhuThu(chiTietPhuThu.getPhuThu().getIdPhuThu())
                 .noiDung(chiTietPhuThu.getPhuThu().getNoiDung())
@@ -203,5 +200,16 @@ public class ChiTietPhuThuImplement implements IChiTietPhuThuService {
                 .build();
     }
 
-
+    private ChiTietPhuThuResponse convertChiTietPhuThuToResponse(ChiTietPhuThu chiTietPhuThu) {
+        return new ChiTietPhuThuResponse(
+                chiTietPhuThu.getIdChiTietPhuThu(),
+                chiTietPhuThu.getChiTietPhieuThue().getIdChiTietPhieuThue(),
+                chiTietPhuThu.getPhuThu().getIdPhuThu(),
+                chiTietPhuThu.getPhuThu().getNoiDung(),
+                chiTietPhuThu.getSoLuong(),
+                chiTietPhuThu.getNgayTao(),
+                chiTietPhuThu.getDonGia(), chiTietPhuThu.getDaThanhToan(),
+                chiTietPhuThu.getChiTietPhieuThue().getPhong().getMaPhong()
+        );
+    }
 }

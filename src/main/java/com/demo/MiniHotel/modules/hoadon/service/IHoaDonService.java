@@ -27,4 +27,5 @@ public interface IHoaDonService {
     List<DoanhThuTheoNgay> getDoanhThuTheoNgay(LocalDate ngayBatDau, LocalDate ngayKetThuc);
     List<DoanhThuTheoThang> getDoanhThuTheoThang(int thangBatDau, int thangKetThuc, int nam);
     List<DoanhThuQuyResponse> getDoanhThuTheoQuy(int quyBatDau, int quyKetThuc, int nam);
+
 }

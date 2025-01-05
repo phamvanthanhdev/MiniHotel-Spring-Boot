@@ -266,9 +266,9 @@ public class ThongTinHangPhongImplement implements IThongTinHangPhongService {
             long gia = thongTinHangPhong.getPhanTramGiam() > 0 ? thongTinHangPhong.getGiaKhuyenMai() : thongTinHangPhong.getGiaGoc();
             if(gia >= giaMin && gia <= giaMax ) {
                 if (noiDung != null && !noiDung.trim().equals("")) {
-                    if(thongTinHangPhong.getTenKieuPhong().contains(noiDung)
-                        || thongTinHangPhong.getTenLoaiPhong().contains(noiDung)
-                        || thongTinHangPhong.getTenHangPhong().contains(noiDung)){
+                    if(thongTinHangPhong.getTenKieuPhong().toLowerCase().contains(noiDung.toLowerCase())
+                        || thongTinHangPhong.getTenLoaiPhong().toLowerCase().contains(noiDung.toLowerCase())
+                        || thongTinHangPhong.getTenHangPhong().toLowerCase().contains(noiDung.toLowerCase())){
                         thongTinHangPhongTimKiem.add(thongTinHangPhong);
                     }
                 } else {
